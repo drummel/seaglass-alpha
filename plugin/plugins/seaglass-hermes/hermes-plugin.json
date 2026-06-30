@@ -1,0 +1,18 @@
+{
+  "name": "seaglass",
+  "version": "0.3.0",
+  "description": "Cross-tool memory overlay for Hermes — connects to the Seaglass memory layer over MCP and injects the user's profile at session start.",
+  "homepage": "https://github.com/drummel/seaglass-alpha",
+  "mcp_servers": {
+    "seaglass": {
+      "command": "seaglass",
+      "args": ["bridge"]
+    }
+  },
+  "hooks": {
+    "on_session_start": "hooks/on_session_start.sh",
+    "on_session_end": "hooks/on_session_end.sh",
+    "pre_llm_call": "hooks/pre_llm_call.sh",
+    "post_llm_call": "hooks/post_llm_call.sh"
+  }
+}

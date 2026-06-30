@@ -1,0 +1,6 @@
+{
+  "name": "seaglass-cli",
+  "version": "0.3.0",
+  "description": "Teaches Claude to drive the Seaglass memory layer through the `seaglass` CLI instead of an MCP server. Lower per-turn token cost; same backend.",
+  "homepage": "https://github.com/drummel/seaglass-alpha"
+}

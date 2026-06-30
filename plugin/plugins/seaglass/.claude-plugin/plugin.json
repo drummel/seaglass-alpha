@@ -1,0 +1,6 @@
+{
+  "name": "seaglass",
+  "version": "0.3.0",
+  "description": "Connects your Claude client to the Seaglass memory layer and teaches it what to capture.",
+  "homepage": "https://github.com/drummel/seaglass-alpha"
+}

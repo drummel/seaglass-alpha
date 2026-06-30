@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "seaglass": {
+      "type": "stdio",
+      "command": "seaglass",
+      "args": ["bridge"]
+    }
+  }
+}
