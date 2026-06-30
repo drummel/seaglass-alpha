@@ -61,7 +61,7 @@ EXIT_NOT_FOUND = 3
 EXIT_RESOLUTION_REQUIRED = 4
 EXIT_AUTH = 5
 
-# Mirror of api/app/mcp/server.py error code → exit-code mapping.
+# Mirror of the server's MCP error-code → exit-code mapping.
 # Codes without an entry fall through to EXIT_GENERIC. That is deliberate for the
 # rich-data page errors — version-conflict (-32030), section not-found/exists
 # (-32031/-32032), and write-forbidden (-32034) all carry their detail in the
@@ -374,7 +374,7 @@ def stderr(msg: str) -> None:
 # MCP server emits on `initialize` doesn't fit the direct-CLI path. Instead we
 # cache the latest version (refreshed at most once a day) and compare it to our
 # own on every command — printing to stderr, the channel a human actually reads.
-# See ADR-0034; `clientInfo.version` carries no authz weight, and neither does this.
+# `clientInfo.version` carries no authz weight, and neither does this.
 
 
 def _parse_version(value: str) -> tuple[int, ...] | None:
@@ -575,7 +575,7 @@ def _select_handle(me: dict[str, Any]) -> str | None:
 
     Prefers the personal-kind account (the user's own tenant — the natural home
     for profile state), then falls back to the first account, then the top-level
-    ``handle`` (the personal-account handle, ADR-0063). Returns ``None`` only when
+    ``handle`` (the personal-account handle). Returns ``None`` only when
     the payload carries no account at all.
     """
     accounts = me.get("accounts") or []
@@ -889,7 +889,7 @@ def _bearer_json(
     """Bearer-authenticated JSON request returning ``(status, decoded_body)``.
 
     Unlike ``_post_json`` this surfaces expected non-2xx statuses (the
-    transcript append protocol speaks in 409/413, ADR-0055) instead of
+    transcript append protocol speaks in 409/413) instead of
     raising, so callers can reconcile. Transport failures still raise.
     """
     if not cfg.token:

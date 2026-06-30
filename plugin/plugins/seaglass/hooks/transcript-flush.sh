@@ -1,5 +1,5 @@
 #!/bin/bash
-# Stop / PreCompact hook for the seaglass plugin (ADR-0055).
+# Stop / PreCompact hook for the seaglass plugin.
 #
 # Incrementally uploads the session transcript: reads stdin JSON for
 # {session_id, transcript_path}, no-ops unless the SessionStart hook

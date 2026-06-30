@@ -3,7 +3,7 @@
 #
 # Reads stdin JSON ({session_id, ...}) and calls `seaglass session end` so the
 # API can flip `sessions.ended_at`. Best-effort: empty id, missing CLI, or any
-# CLI error is silent (the TTL sweep is the safety net, ADR-0008). Same CLI
+# CLI error is silent (the TTL sweep is the safety net). Same CLI
 # call as the Claude Code SessionEnd hook — only the shim name differs.
 set -uo pipefail
 

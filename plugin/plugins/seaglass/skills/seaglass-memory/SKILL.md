@@ -63,7 +63,7 @@ Read `seaglass://profile`. It returns markdown with four sections:
 4. **Adjusting how I behave** — links the user can visit (and CLI commands
    they can run) to change preferences. Share these verbatim when asked.
 
-In Claude Code, the `SessionStart` hook ([ADR-0007](../../../../../docs/adr/0007-plugin-hooks-for-claude-code.md))
+In Claude Code, the `SessionStart` hook
 injects the profile markdown as `additionalContext` before your first turn,
 so you'll already see it — don't re-fetch unless you need a refresh mid-session.
 In clients that don't run plugin hooks (Cowork, some IDE extensions), the user
@@ -240,7 +240,7 @@ wiki reads coherently regardless of which writer wrote which page:
 ## When to author a page directly
 
 Check `seaglass://profile`'s `## Mode` section first. The user has
-chosen one of two cost-routing modes (ADR-0005):
+chosen one of two cost-routing modes:
 
 - **agent mode** — author pages directly via `edit_page` /
   `edit_section` / `append_section` (and `create_page` for new ones).
@@ -288,11 +288,11 @@ server mode and agent mode.
 
 ## How to call the write tools
 
-### Three forms of page reference (ADR-0011)
+### Three forms of page reference
 
 * **Typed slug** — `projects/seaglass/competitors`, `people/sarah-chen`.
   Always slash-separated, lowercase kebab-case, first segment is the page
-  type. Types are **library-defined** (ADR-0024) and plural by convention
+  type. Types are **library-defined** and plural by convention
   (`people` / `projects` / `topics`, plus whatever the library adds); they
   are not a fixed global set. The most precise form; it identifies an exact
   page. **A nested slug requires its parent slug to already exist** —

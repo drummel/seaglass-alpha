@@ -56,7 +56,6 @@ projects. If the profile is empty, the user hasn't taught Seaglass much about
 themselves yet; treat that as a normal cold-start, not a problem to flag.
 
 In Claude Code, the `SessionStart` hook
-([ADR-0007](../../../../../docs/adr/0007-plugin-hooks-for-claude-code.md))
 already injects the profile as additional context before your first turn,
 so you'll usually see it without running this command. Re-run only if you
 want a fresh fetch mid-session.
@@ -150,7 +149,7 @@ coherently regardless of which writer wrote which page:
 ## When to author a page directly
 
 Run `seaglass me --json` (or read `seaglass://profile` via MCP) and
-check the `## Mode` section. ADR-0005 routes cost two ways:
+check the `## Mode` section. Cost is routed two ways:
 
 - **agent mode** — you author pages directly through `seaglass page
   edit` / `page append` / `page create`. The synthesis worker stays
@@ -188,7 +187,7 @@ seaglass page create --type projects --title "Project Nova" --json
 seaglass page create --type people --title "Sarah Chen" --identity-hint "Linear PM" --json
 ```
 
-`--type` is a library-defined page type (ADR-0024): `people` / `projects` /
+`--type` is a library-defined page type: `people` / `projects` /
 `topics` are seeded suggestions, but a library may define its own (e.g.
 `books`). Use the exact plural slug — never a singular noun like `person`.
 

@@ -9,7 +9,7 @@ This marketplace ships **two plugins** that share the same backend — pick one 
 | `seaglass` | Local `seaglass` stdio shim → API | Default. Works in Claude Code, Claude Desktop, Cowork, OpenClaw — any MCP-capable client. |
 | `seaglass-cli` | `seaglass` CLI over `bash` | Token-cheap alternative for shell-capable clients (Claude Code). Same backend, lower per-turn cost. |
 
-Both plugins require the `seaglass` CLI on PATH — the CLI is the single auth boundary. See `docs/cli-vs-mcp.md` for the cost/reliability tradeoffs between MCP and CLI.
+Both plugins require the `seaglass` CLI on PATH — the CLI is the single auth boundary.
 
 A third, **experimental** plugin (`plugin/plugins/seaglass-hermes/`) targets the [Hermes](https://github.com/nousresearch/hermes-agent) agent. It is intentionally **not** published to the marketplace — its hook contract is unverified — so `marketplace.json` lists only the two plugins above. See its README before relying on it.
 
@@ -17,7 +17,7 @@ The MCP plugin provides:
 
 - **MCP server connection** — the full agent-facing tool surface: reading (`search`), writing (`store_memory`, `store_document`), flagging (`flag_memory`), reconsolidating (`reconsolidate_memory`), authoring and editing wiki pages (`create_page`, `edit_page`/`edit_section`, `append_section`, `revert_page`, `move_page`, `get_page_history`), and tracing back through past sessions (`transcript_search`, `transcript_read`). See the parity table under [Tools / commands](#tools--commands).
 - **Capture skill** — teaches Claude when and how to read/write memories based on conversation signals.
-- **Session lifecycle hooks** (Claude Code only) — `SessionStart` injects the user's profile + behavior instructions before the first turn; `SessionEnd` closes the `sessions` row server-side. Non-Code clients ignore the hooks and fall back to the `/recall` / `/checkpoint` skills. See [ADR-0007](../docs/adr/0007-plugin-hooks-for-claude-code.md).
+- **Session lifecycle hooks** (Claude Code only) — `SessionStart` injects the user's profile + behavior instructions before the first turn; `SessionEnd` closes the `sessions` row server-side. Non-Code clients ignore the hooks and fall back to the `/recall` / `/checkpoint` skills.
 
 The CLI plugin provides:
 
@@ -84,7 +84,7 @@ If you're working from a local clone instead of the GitHub repo:
 
 ### Upgrading from the old plugin names
 
-The marketplace and plugins were renamed in [ADR-0002](../docs/adr/0002-plugin-and-marketplace-naming.md). If you installed before the rename:
+The marketplace and plugins were renamed. If you installed before the rename:
 
 ```bash
 claude plugin uninstall seaglass-memory@seaglass-memory-plugin
@@ -179,9 +179,9 @@ Every operation that accepts a page reference also accepts a **typed
 slug** like `projects/seaglass/competitors` or
 `projects/seaglass/data-model/schema`. Slugs are lowercase kebab-case;
 the first segment is the page type (`people` / `projects` / `topics` are
-the seeded suggestions, but each library defines its own — see ADR-0024)
+the seeded suggestions, but each library defines its own)
 and is inherited by every descendant — within `projects/seaglass`, every
-sub-page is part of that project (ADR-0011).
+sub-page is part of that project.
 
 **Parents must already exist.** Creating `projects/seaglass/competitors`
 requires `projects/seaglass` to already be a page; Seaglass never

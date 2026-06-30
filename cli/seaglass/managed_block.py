@@ -1,4 +1,4 @@
-"""Managed-block compiler for comment-bearing instruction/config files (ADR-0030).
+"""Managed-block compiler for comment-bearing instruction/config files.
 
 A Seaglass managed block is one sentinel-delimited region Seaglass can find,
 update in place, and remove cleanly across repeated `seaglass install` runs —
@@ -55,7 +55,7 @@ def render_block(body: str, *, style: CommentStyle = HTML) -> str:
 def find_block(text: str, *, style: CommentStyle = HTML) -> tuple[int, int] | None:
     """Return (start, end) character span of the block, or ``None`` if absent.
 
-    A second sentinel pair is ignored — the first region wins (ADR-0030).
+    A second sentinel pair is ignored — the first region wins.
     """
     begin_marker = f"{style.open}BEGIN {_LABEL}"
     end_marker = _end(style)

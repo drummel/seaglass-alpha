@@ -12,7 +12,7 @@ This exists for two reasons:
 2. **Token-cheap agent integration.** Pair with the
    [`seaglass-cli`](../plugin/plugins/seaglass-cli) plugin to teach Claude
    Code (or any shell-capable agent) to drive Seaglass over `bash` instead
-   of MCP. See `docs/cli-vs-mcp.md` for the cost story.
+   of MCP.
 
 The CLI uses only the Python 3.11+ standard library — no third-party
 dependencies, ~150 ms cold start.
@@ -32,7 +32,7 @@ pip install ./cli
 
 After install, `seaglass --version` should print `seaglass 0.3.0`.
 
-> **Upgrading from `sg`?** The binary was renamed in [ADR-0001](../docs/adr/0001-cli-binary-name-seaglass.md).
+> **Upgrading from `sg`?** The binary was renamed from `sg` to `seaglass`.
 > Run `uv tool uninstall seaglass-cli && uv tool install ./cli` (or the pipx
 > equivalent) to drop the old `sg` shim and pick up `seaglass`.
 
@@ -150,9 +150,7 @@ echo "Tom missed three deadlines this quarter." \
   | seaglass memory store --page Tom --type people --stdin --sensitivity sensitive
 ```
 
-For a longer cookbook organized by workflow — sensitivity handling,
-documents, scripting patterns with `jq`, exit-code branching — see
-[`docs/cli-cookbook.md`](../docs/cli-cookbook.md).
+For more patterns (sensitivity handling, documents, scripting with `jq`, exit-code branching), run `seaglass <command> --help`.
 
 ## Output
 
@@ -191,7 +189,7 @@ call — a few representative ones:
 The exceptions are the surfaces that aren't MCP tools at all: `auth`,
 `install`, `update`, and the `session` / transcript commands speak to REST
 endpoints, and `me` / `profile` read the `seaglass://profile` resource (profile
-*writes* live only in the admin web UI, ADR-0006). `tests/test_parity.py`
+*writes* live only in the admin web UI). `tests/test_parity.py`
 guards the CLI↔MCP tool mapping against drift.
 
 Server-side: same auth, same session bookkeeping, same service-layer code

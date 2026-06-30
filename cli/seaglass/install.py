@@ -1,5 +1,5 @@
 """`seaglass install <client>` — write per-client connector config + a managed
-guidance block, idempotently (ADR-0028 P1, ADR-0030).
+guidance block, idempotently.
 
 Two file shapes:
   * Comment-bearing files (markdown AGENTS.md / .cursor rules, TOML config.toml)

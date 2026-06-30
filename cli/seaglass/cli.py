@@ -18,7 +18,7 @@ The command groups:
     whoami / tools / update     — diagnostics, tool list, self-update
     --version                   — print the CLI version (flag, not a subcommand)
 
-Conventions (follow docs/building-skills-with-clis.md):
+Conventions:
 - `--json` on every data-returning command (default is human-readable).
 - Errors on stderr, data on stdout.
 - Documented exit codes: 0 ok, 1 generic, 3 not found, 4 resolution required, 5 auth.
@@ -73,7 +73,7 @@ from seaglass.client import (
     write_token_file,
 )
 
-# Page types are library-defined data now (ADR-0024); the CLI can't enumerate
+# Page types are library-defined data now; the CLI can't enumerate
 # them, so `--type` is a free kebab-case token validated server-side against the
 # library's registry. `people`/`projects`/`topics` are the seeded suggestions.
 _TYPE_HELP = (
@@ -953,7 +953,7 @@ def cmd_session_end(args: argparse.Namespace) -> int:
 
 
 def _transcript_offset_path(client_session_id: str) -> Path:
-    """Local cache of the last *server-confirmed* offset (ADR-0055).
+    """Local cache of the last *server-confirmed* offset.
 
     Purely an optimization — the server's byte_count is the source of truth
     and a missing/stale cache costs one reconciliation round trip, never
@@ -998,7 +998,7 @@ def _resolve_client_session_id(explicit: str | None) -> str | None:
 
 
 def cmd_session_upload_transcript(args: argparse.Namespace) -> int:
-    """`seaglass session upload-transcript` — incremental transcript sync (ADR-0055).
+    """`seaglass session upload-transcript` — incremental transcript sync.
 
     Sends the complete-lines tail of the JSONL past the cached offset; on a
     409 the server's byte_count wins and the send is retried once from
@@ -1085,7 +1085,7 @@ def cmd_session_transcript_config(args: argparse.Namespace) -> int:
 
 
 def _render_briefing(b: dict[str, Any]) -> str:
-    """Render the briefing payload (ADR-0067) into a compact markdown block.
+    """Render the briefing payload into a compact markdown block.
 
     Returns "" when nothing is worth showing, so the SessionStart hook can
     skip emitting it.
@@ -1124,7 +1124,7 @@ def _render_briefing(b: dict[str, Any]) -> str:
 
 
 def cmd_session_briefing(args: argparse.Namespace) -> int:
-    """`seaglass session briefing` — render the previous session's digest (ADR-0067).
+    """`seaglass session briefing` — render the previous session's digest.
 
     The SessionStart hook appends this to the profile it injects, giving the
     agent continuity with what it did last time. Prints nothing when there's
@@ -1322,7 +1322,7 @@ def cmd_profile_show(args: argparse.Namespace) -> int:
 
 
 def _deprecate_profile_write(cmd: str, admin_path: str) -> None:
-    """Emit ADR-0006 deprecation warning on every profile-write subcommand.
+    """Emit the deprecation warning on every profile-write subcommand.
 
     Profile state is web-UI only. The CLI write paths still function for
     one release so existing scripts don't break, but each invocation
@@ -1331,7 +1331,7 @@ def _deprecate_profile_write(cmd: str, admin_path: str) -> None:
     cfg = load_config()
     admin_url = cfg.base_url.rstrip("/")
     stderr(
-        f"warning: `seaglass {cmd}` is deprecated (ADR-0006). "
+        f"warning: `seaglass {cmd}` is deprecated. "
         f"Profile state is managed in the admin web UI: {admin_url}{admin_path}. "
         f"This subcommand will be removed in the next minor release."
     )
@@ -1454,7 +1454,7 @@ def cmd_profile_agent_instructions(args: argparse.Namespace) -> int:
 
 
 def cmd_page_create(args: argparse.Namespace) -> int:
-    """`seaglass page create` — explicit wiki page creation (ADR-0011 shapes)."""
+    """`seaglass page create` — explicit wiki page creation."""
     cfg = load_config()
     arguments: dict[str, Any] = {}
     if args.slug:
@@ -1513,7 +1513,7 @@ def _fetch_page_version(cfg, page: str) -> int:
     if not isinstance(result, dict) or result.get("mode") != "page":
         raise CliError(f"could not resolve {page!r} to a page for version lookup", EXIT_GENERIC)
     page_dict = result.get("page") or {}
-    # `search` surfaces the page version inside the page payload (ADR-0005 §5).
+    # `search` surfaces the page version inside the page payload.
     version = page_dict.get("version")
     if isinstance(version, int):
         return version
@@ -1605,7 +1605,7 @@ def cmd_page_move(args: argparse.Namespace) -> int:
 def cmd_install(args: argparse.Namespace) -> int:
     """`seaglass install <client>` — write per-client connector config + guidance.
 
-    Idempotent: re-running it is a no-op when nothing changed (ADR-0030). The
+    Idempotent: re-running it is a no-op when nothing changed. The
     default recipe points at the `seaglass bridge` stdio transport; `--remote`
     emits the hosted-MCP variant (URL, for use after `seaglass auth login` /
     OAuth).
@@ -1842,7 +1842,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = session_sub.add_parser(
         "upload-transcript",
-        # Incremental transcript upload via plugin hooks (ADR-0055).
+        # Incremental transcript upload via plugin hooks.
         help="incrementally upload the session transcript",
         description=(
             "Sends the complete-lines tail of a Claude Code JSONL transcript "
@@ -1876,7 +1876,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = session_sub.add_parser(
         "briefing",
-        # Previous-session digest for resume context (ADR-0067).
+        # Previous-session digest for resume context.
         help="render the previous session's digest for resume context",
         description=(
             "Prints a compact markdown summary of this agent's last ended "
@@ -1998,14 +1998,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     # page — page-level operations (create / edit / append / history / revert).
     # Subsumes the old `page create`; `page` stays as a deprecated alias
-    # for one release per ADR-0005.
+    # for one release.
     page_parser = sub.add_parser("page", help="wiki page operations")
     page_sub = page_parser.add_subparsers(dest="page_command", required=True)
 
     sp = page_sub.add_parser(
         "create",
         help="explicitly create a wiki page (people / projects / topics / custom)",
-        # The three input shapes and the never-auto-create-ancestors rule are ADR-0011.
+        # Three input shapes; ancestors are never auto-created.
         description=(
             "Three input shapes:\n"
             "  1. --slug 'projects/seaglass/competitors' — full typed slug; "
@@ -2117,7 +2117,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_json_flag(sp)
     sp.set_defaults(func=cmd_page_move)
 
-    # search (was get_context; renamed in ADR-0005, alias kept server-side)
+    # search (was get_context; alias kept server-side)
     sp = sub.add_parser(
         "search",
         help="search and read memories, documents, and pages",
@@ -2131,7 +2131,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("query", help="name, typed ID, path, or free-text query")
     sp.add_argument(
         "--type",
-        # Page types are library-defined (ADR-0024).
+        # Page types are library-defined.
         help=(
             "restrict results: 'document' / 'memory' filter the evidence layer; "
             "any other value is a library-defined page type and filters by slug "

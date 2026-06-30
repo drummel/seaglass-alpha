@@ -2,7 +2,7 @@
 # Hermes on_session_start hook for Seaglass.
 #
 # Hermes exposes a DIFFERENT four-hook contract from Claude Code
-# (pre_llm_call / post_llm_call / on_session_start / on_session_end — ADR-0028).
+# (pre_llm_call / post_llm_call / on_session_start / on_session_end).
 # The logic stays in the `seaglass` CLI; only this thin shim varies. Confirm
 # Hermes' exact hook stdin/stdout contract against live docs at build time.
 #

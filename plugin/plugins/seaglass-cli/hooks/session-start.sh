@@ -1,6 +1,5 @@
 #!/bin/bash
 # SessionStart hook for the seaglass plugin.
-# See docs/adr/0007-plugin-hooks-for-claude-code.md.
 #
 # Reads stdin JSON ({session_id, source, ...}), writes
 # SEAGLASS_CLIENT_SESSION_ID into $CLAUDE_ENV_FILE so the rest of the
@@ -33,12 +32,12 @@ print(data.get("session_id") or "")
 
 # Pin all this chat'\''s writes to one `sessions` row server-side. The
 # `seaglass` stdio shim forwards SEAGLASS_CLIENT_SESSION_ID as the
-# x-seaglass-client-session header; the API branches on it (ADR-0008).
+# x-seaglass-client-session header; the API branches on it.
 if [[ -n "$SESSION_ID" && -n "${CLAUDE_ENV_FILE:-}" ]]; then
     printf 'export SEAGLASS_CLIENT_SESSION_ID=%s\n' "$SESSION_ID" >> "$CLAUDE_ENV_FILE"
 fi
 
-# Transcript capture (ADR-0054/0053): resolve the user's opt-in once and pin
+# Transcript capture: resolve the user's opt-in once and pin
 # it into the session env so the per-turn Stop/PreCompact hooks can no-op
 # without a network round trip. Default off on any failure.
 if [[ -n "${CLAUDE_ENV_FILE:-}" ]] && command -v seaglass >/dev/null 2>&1; then
@@ -63,7 +62,7 @@ if [[ -z "$PROFILE" ]]; then
     exit 0
 fi
 
-# Resume briefing (ADR-0067): append a digest of this agent's previous
+# Resume briefing: append a digest of this agent's previous
 # session so the conversation starts with continuity. Best-effort and
 # deterministic (no LLM); empty when there's no prior session worth
 # summarizing, in which case we emit the profile alone.

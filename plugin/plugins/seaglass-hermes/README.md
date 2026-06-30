@@ -14,10 +14,9 @@ Seaglass into Hermes' session lifecycle.
 > **Hooks differ per platform.** Hermes' contract (`pre_llm_call` /
 > `post_llm_call` / `on_session_start` / `on_session_end`) is *not* Claude
 > Code's (`SessionStart` / `SessionEnd` / `PreToolUse` / `PostToolUse`). The
-> logic stays in the `seaglass` CLI — only the thin shims in `hooks/` vary
-> (ADR-0028). **Confirm the exact hook stdin/stdout contract against the live
-> Hermes docs at build time** — the shims here follow our docs-grade tear-down
-> ([research/client-tools/hermes.md](../../../docs/research/client-tools/hermes.md)).
+> logic stays in the `seaglass` CLI — only the thin shims in `hooks/` vary.
+> **Confirm the exact hook stdin/stdout contract against the live
+> Hermes docs at build time** — the shims here follow our docs-grade tear-down.
 
 ## What the hooks do
 
