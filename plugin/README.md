@@ -101,6 +101,16 @@ claude plugin uninstall seaglass-cli@seaglass-memory
 
 ## Install in Claude Desktop
 
+### One-click bundle (.mcpb)
+
+The fastest path: download **`seaglass.mcpb`** from your Seaglass server at
+`<server>/v1/connect/seaglass.mcpb` (the "Add to Claude Desktop" button on the
+Connections page) and double-click it — Claude Desktop installs the connector,
+which runs `seaglass bridge`. Requires the `seaglass` CLI on PATH and a one-time
+`seaglass auth login`.
+
+### Manual JSON config
+
 Claude Desktop uses a JSON config file to register MCP servers. Open your config file:
 
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
