@@ -27,7 +27,7 @@ Capture:
 - Projects, tools, initiatives discussed with substantive content.
 - Decisions the user made.
 - Preferences expressed ("I prefer async reviews", "use vitest, not jest").
-- Corrections to prior facts (use `flag_memory` for those, not a new write).
+- Corrections to prior facts (store the new fact with `supersedes`, or `update_memory` retract; not a plain new write).
 - Pasted documents, specs, or transcripts the user wanted kept (use
   `store_document`).
 
@@ -66,10 +66,10 @@ Use the existing `seaglass-memory` skill's tool calls (`store_memory`,
 
 If a memory you're about to write closely matches something already in
 Seaglass (you saw it via `search` this session, or you wrote it
-earlier this same session), skip it. If it adds new context to an existing
-memory, prefer `flag_memory` with `flag_outdated` on the old one and a
-fresh write — or use `store_memory` with `source_type: annotation` and
-`source_memory_id` pointing at the original.
+earlier this same session), skip it. If the new fact replaces the old one,
+store it with `supersedes: [<old_id>]` so the stale row retires in the same
+write — or, if it merely adds context, use `store_memory` with
+`source_type: annotation` and `source_memory_id` pointing at the original.
 
 ## Sensitivity
 

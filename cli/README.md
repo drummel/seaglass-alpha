@@ -83,7 +83,7 @@ seaglass document store --title T [--file PATH | --content TEXT | --stdin] [--pa
 seaglass annotate <page> --content TEXT [--sensitivity S] [--json]
 
 # curate
-seaglass flag <target_id> --action {flag_incorrect|flag_outdated|flag_sensitive|flag_private|redact}
+seaglass memory update <target_id> --action {retract|supersede|flag_sensitive|flag_private|redact} [--successor ID] [--note WHY]
                           [--reason R] [--json]
 seaglass reconsolidate <query> [--kind {split|merge|reassign} --details-json '{...}'
                                 | --resolution-json '{...}'] [--json]
@@ -140,7 +140,7 @@ seaglass memory store --page "projects/seaglass/competitors" \
   --content "Memex shipped a similar 'auto-organize pages' release."
 
 # Flag something the user just corrected
-seaglass flag memory_01HXABC... --action flag_incorrect --reason "wrong manager"
+seaglass memory update memory_01HXABC... --action retract --note "wrong manager, user-confirmed"
 
 # Diagnose two-people-one-name confusion
 seaglass reconsolidate "I think there are two Steves"
@@ -179,7 +179,7 @@ call — a few representative ones:
 | `seaglass search` | `search` |
 | `seaglass memory store` | `store_memory` |
 | `seaglass document store` | `store_document` |
-| `seaglass flag` | `flag_memory` |
+| `seaglass memory update` | `update_memory` |
 | `seaglass reconsolidate` | `reconsolidate_memory` |
 | `seaglass page create` | `create_page` |
 | `seaglass page edit` | `edit_page` / `edit_section` |

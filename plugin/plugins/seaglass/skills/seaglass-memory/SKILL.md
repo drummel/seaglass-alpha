@@ -13,7 +13,7 @@ facts when you learn them.
 
 You're reading this skill because the `seaglass-memory` plugin is installed,
 but if the actual MCP tools (`search`, `store_memory`, `store_document`,
-`flag_memory`, `reconsolidate_memory`) aren't loaded — or a tool call returns
+`update_memory`, `reconsolidate_memory`) aren't loaded — or a tool call returns
 an unauthenticated / not-connected error — the MCP server hasn't connected.
 The cause is almost always auth, and the fix is one command: `seaglass auth
 login`.
@@ -32,6 +32,12 @@ automatically.
 
 Handling notes:
 
+- **Name the exact command in your reply.** Say `seaglass auth login`
+  verbatim (as above), not "the login command" — the user may act on your
+  message later, from a terminal you can't see.
+- **A connection problem is not product feedback.** Do not call
+  `send_seaglass_product_feedback` (or any other Seaglass tool) about the
+  tools being unavailable; reply in text with the offer and the command.
 - **Offer first, then run on yes.** `auth login` opens a browser and blocks
   until the user approves — it's a deliberate, outward-facing step, so confirm
   before running it rather than firing it unprompted.
@@ -468,13 +474,33 @@ Per-turn writes still happen through the normal `store_memory` /
 `store_document` path described above; the `/checkpoint` skill is for
 end-of-session bulk capture, not for replacing per-turn writes.
 
-## Flagging incorrect memory
+## Correcting stored memory (retirement)
 
-When the user corrects a stored fact or says "that's wrong, that's outdated",
-use `flag_memory` to mark the offending memory:
+Memory self-corrects through retirement: a retired row is kept as a labeled
+tombstone (visible in search, out of synthesis). Three cases, one rule each:
 
-- `flag_incorrect` — fact is wrong.
-- `flag_outdated` — once true, no longer current.
-- `redact` — replace content with `[redacted]` (use sparingly).
+- **The user gives you the newer fact** ("actually Sarah moved to platform"):
+  search for the stale memory, then `store_memory` the new fact with
+  `supersedes: [<old_id>]`. One write captures the correction and retires what
+  it replaces. Do not use `update_memory` for this.
+- **The fact was never true and nothing replaces it** ("delete that, I never
+  said that"): `update_memory` with `action: "retract"`. Always fill `note`
+  with why; the note is what future sessions see on the tombstone. Retract is
+  only for corrections with no replacement: if you are about to store the
+  corrected fact anyway, do NOT retract-then-store as two calls — the one
+  `store_memory` with `supersedes` keeps the old fact linked to its
+  replacement.
+- **A fact is merely old but still your latest knowledge**: leave it alone.
+  Recency is carried by `event_time`; there is no "outdated" flag.
 
-Synthesis re-runs automatically.
+Other `update_memory` actions: `supersede` (retire retroactively when the
+newer memory already exists; pass `successor_id`), `flag_sensitive` /
+`flag_private` (audience correction), `redact` (destroy content — sparingly).
+
+If a `store_memory` response includes `retired_match`, your new fact resembles
+a retired claim. Do not ignore it: either the source you're reading is stale
+(withdraw — retract the memory you just wrote), or the fact genuinely came
+back (declare the reversal — `update_memory` supersede the matched tombstone
+with your new memory as successor). Ask the user when unsure.
+
+Synthesis re-runs automatically after any retirement.

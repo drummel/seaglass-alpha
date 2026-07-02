@@ -2,20 +2,22 @@
 
 Connects Claude to the Seaglass personal memory layer. Once installed, Claude automatically captures and recalls context about people, projects, and topics across conversations.
 
-This marketplace ships **two plugins** that share the same backend — pick one (or both):
+**The simplest way to connect is the remote connector — no plugin or CLI needed.** Add your Seaglass server's connector URL (`<server>/mcp`) as a custom connector in claude.ai, Claude Desktop, Cowork, Cursor, or Claude Code, approve in the browser, and `search` works. The Connections page in the Seaglass web app has one-click buttons and copyable recipes for every client.
+
+The plugins in this marketplace are the **optional power-up** on top of that: they add the capture skill, session lifecycle hooks (automatic profile injection and session close on Claude Code), and a token-cheap CLI transport. Two plugins share the same backend — pick one (or both):
 
 | Plugin | Transport | Best for |
 |---|---|---|
-| `seaglass` | Local `seaglass` stdio shim → API | Default. Works in Claude Code, Claude Desktop, Cowork, OpenClaw — any MCP-capable client. |
+| `seaglass` | Local `seaglass bridge` stdio adapter → API | Skill + hooks for MCP-capable clients that need a local stdio server. |
 | `seaglass-cli` | `seaglass` CLI over `bash` | Token-cheap alternative for shell-capable clients (Claude Code). Same backend, lower per-turn cost. |
 
-Both plugins require the `seaglass` CLI on PATH — the CLI is the single auth boundary.
+Both plugins use the `seaglass` CLI on PATH as their auth boundary; the remote connector needs neither.
 
 A third, **experimental** plugin (`plugin/plugins/seaglass-hermes/`) targets the [Hermes](https://github.com/nousresearch/hermes-agent) agent. It is intentionally **not** published to the marketplace — its hook contract is unverified — so `marketplace.json` lists only the two plugins above. See its README before relying on it.
 
 The MCP plugin provides:
 
-- **MCP server connection** — the full agent-facing tool surface: reading (`search`), writing (`store_memory`, `store_document`), flagging (`flag_memory`), reconsolidating (`reconsolidate_memory`), authoring and editing wiki pages (`create_page`, `edit_page`/`edit_section`, `append_section`, `revert_page`, `move_page`, `get_page_history`), and tracing back through past sessions (`transcript_search`, `transcript_read`). See the parity table under [Tools / commands](#tools--commands).
+- **MCP server connection** — the full agent-facing tool surface: reading (`search`), writing (`store_memory`, `store_document`), retiring/reclassifying (`update_memory`), reconsolidating (`reconsolidate_memory`), authoring and editing wiki pages (`create_page`, `edit_page`/`edit_section`, `append_section`, `revert_page`, `move_page`, `get_page_history`), and tracing back through past sessions (`transcript_search`, `transcript_read`). See the parity table under [Tools / commands](#tools--commands).
 - **Capture skill** — teaches Claude when and how to read/write memories based on conversation signals.
 - **Session lifecycle hooks** (Claude Code only) — `SessionStart` injects the user's profile + behavior instructions before the first turn; `SessionEnd` closes the `sessions` row server-side. Non-Code clients ignore the hooks and fall back to the `/recall` / `/checkpoint` skills.
 
@@ -101,15 +103,20 @@ claude plugin uninstall seaglass-cli@seaglass-memory
 
 ## Install in Claude Desktop
 
-### One-click bundle (.mcpb)
+### Remote connector (recommended)
 
-The fastest path: download **`seaglass.mcpb`** from your Seaglass server at
-`<server>/v1/connect/seaglass.mcpb` (the "Add to Claude Desktop" button on the
-Connections page) and double-click it — Claude Desktop installs the connector,
-which runs `seaglass bridge`. Requires the `seaglass` CLI on PATH and a one-time
-`seaglass auth login`.
+Add your Seaglass server as a custom connector: Settings → Connectors → Add
+custom connector, paste `<server>/mcp`, and approve in the browser. The
+"Add to Claude" button on the Connections page prefills this for you. A
+connector added once reaches claude.ai, Desktop, Cowork, and mobile. No CLI,
+no local process. (The old one-click `.mcpb` bundle has been removed; the
+connector replaces it.)
 
-### Manual JSON config
+### Manual JSON config (stdio fallback)
+
+Use this only if you specifically need a local stdio server — for example
+local development against a dev API, or a host without remote-connector
+support. `seaglass bridge` is dev tooling, not the primary install path.
 
 Claude Desktop uses a JSON config file to register MCP servers. Open your config file:
 
@@ -167,7 +174,7 @@ subcommands. The agent-facing surface is the same set either way:
 | `search` | `seaglass search` | Read — recall synthesized knowledge |
 | `store_memory` | `seaglass memory store` | Write a memory |
 | `store_document` | `seaglass document store` | Write a document |
-| `flag_memory` | `seaglass flag` | Flag / redact a memory |
+| `update_memory` | `seaglass memory update` | Retract / supersede / reclassify / redact a memory |
 | `reconsolidate_memory` | `seaglass reconsolidate` | Diagnose + resolve memory confusion |
 | `create_page` | `seaglass page create` | Register a wiki page |
 | `edit_page` / `edit_section` | `seaglass page edit` | Author / revise a page (whole or one section) |

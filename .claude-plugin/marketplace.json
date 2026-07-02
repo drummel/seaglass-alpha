@@ -12,12 +12,12 @@
     {
       "name": "seaglass",
       "source": "./plugin/plugins/seaglass",
-      "description": "Seaglass MCP connector + capture skill (default; works in any MCP-capable client)"
+      "description": "Capture skill + session hooks for the Seaglass memory layer. Pairs with the remote Seaglass connector; includes a local stdio bridge for clients that need one."
     },
     {
       "name": "seaglass-cli",
       "source": "./plugin/plugins/seaglass-cli",
-      "description": "Skill that drives Seaglass through the `seaglass` CLI instead of MCP. Lower per-turn token cost. Requires the `seaglass` CLI on PATH."
+      "description": "Skill that drives Seaglass through the `seaglass` CLI instead of MCP. Lower per-turn token cost for shell-capable clients."
     }
   ]
 }

@@ -49,6 +49,19 @@ VERSION_CHECK_TTL_SECONDS = 24 * 60 * 60
 # Tokens minted via `seaglass auth login` are persisted here so subsequent commands
 # can pick them up without env vars. SEAGLASS_TOKEN still wins when set.
 TOKEN_FILE = Path.home() / ".config" / "seaglass" / "token"
+# Sidecar metadata for the persisted token: where it came from ("login" or
+# "redeem") and, for redeem-minted tokens, when it expires if unused. Purely
+# informational (`seaglass auth status`); a missing or stale file is harmless.
+TOKEN_META_FILE = Path.home() / ".config" / "seaglass" / "token_meta.json"
+
+# One shared 401 recovery string: the agent-readable path first (works in a
+# headless container over the existing MCP connection), the browser path second.
+AUTH_RECOVERY_MESSAGE = (
+    "Authentication failed (401). To re-authenticate without a browser, call the "
+    "Seaglass cli_handoff tool, then run `seaglass auth redeem <code>` with the "
+    "code it returns. On a machine with a browser, run `seaglass auth login` "
+    "instead (or check SEAGLASS_TOKEN if you set it manually)."
+)
 # Base-URL pin written by `seaglass auth login --url`. Sits one layer below the
 # SEAGLASS_URL env var and one above the baked DEFAULT_URL — see resolve_base_url.
 CONFIG_FILE = Path.home() / ".config" / "seaglass" / "config.json"
@@ -107,7 +120,12 @@ def write_token_file(token: str) -> None:
 
 
 def clear_token_file() -> bool:
-    """Remove the persisted token, if any. Returns True iff something was removed."""
+    """Remove the persisted token (and its metadata sidecar), if any.
+
+    Returns True iff a token was removed.
+    """
+    with contextlib.suppress(OSError):
+        TOKEN_META_FILE.unlink(missing_ok=True)
     try:
         TOKEN_FILE.unlink()
         return True
@@ -115,6 +133,29 @@ def clear_token_file() -> bool:
         return False
     except OSError:
         return False
+
+
+def write_token_meta(*, source: str, expires_at: str | None = None) -> None:
+    """Persist informational metadata for the stored token. Best-effort."""
+    try:
+        TOKEN_META_FILE.parent.mkdir(parents=True, exist_ok=True)
+        data: dict[str, Any] = {"source": source}
+        if expires_at:
+            data["expires_at"] = expires_at
+        TOKEN_META_FILE.write_text(json.dumps(data) + "\n", encoding="utf-8")
+        with contextlib.suppress(OSError):
+            TOKEN_META_FILE.chmod(0o600)
+    except OSError:
+        pass
+
+
+def read_token_meta() -> dict[str, Any]:
+    """Read the token metadata sidecar. Missing/corrupt → empty dict."""
+    try:
+        data = json.loads(TOKEN_META_FILE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 def _read_config_url() -> str | None:
@@ -284,10 +325,7 @@ def rpc_call(
         with contextlib.suppress(Exception):
             body_text = e.read().decode("utf-8", errors="replace")
         if e.code == 401:
-            raise CliError(
-                "Authentication failed (401). Run `seaglass auth login` to re-authenticate (or check SEAGLASS_TOKEN if you set it manually).",
-                EXIT_AUTH,
-            ) from e
+            raise CliError(AUTH_RECOVERY_MESSAGE, EXIT_AUTH) from e
         raise CliError(
             f"HTTP {e.code} from {cfg.mcp_url}: {body_text or e.reason}",
             EXIT_GENERIC,
@@ -533,10 +571,7 @@ def _admin_request(
         with contextlib.suppress(Exception):
             body_text = e.read().decode("utf-8", errors="replace")
         if e.code == 401:
-            raise CliError(
-                "Authentication failed (401). Run `seaglass auth login` to re-authenticate (or check SEAGLASS_TOKEN if you set it manually).",
-                EXIT_AUTH,
-            ) from e
+            raise CliError(AUTH_RECOVERY_MESSAGE, EXIT_AUTH) from e
         if e.code == 404:
             raise CliError(
                 f"Not found: {path}. {body_text}".rstrip(),
@@ -666,10 +701,7 @@ def forward_frame(cfg: Config, frame_bytes: bytes, *, timeout: float = 60.0) -> 
             with contextlib.suppress(Exception):
                 body_text = e.read().decode("utf-8", errors="replace")
             if e.code == 401:
-                raise CliError(
-                    "Authentication failed (401). Run `seaglass auth login` to re-authenticate (or check SEAGLASS_TOKEN if you set it manually).",
-                    EXIT_AUTH,
-                ) from e
+                raise CliError(AUTH_RECOVERY_MESSAGE, EXIT_AUTH) from e
             raise CliError(
                 f"HTTP {e.code} from {cfg.mcp_url}: {body_text or e.reason}",
                 EXIT_GENERIC,
@@ -797,10 +829,7 @@ def upload_document(
         with contextlib.suppress(Exception):
             body_text = e.read().decode("utf-8", errors="replace")
         if e.code == 401:
-            raise CliError(
-                "Authentication failed (401). Run `seaglass auth login` to re-authenticate (or check SEAGLASS_TOKEN if you set it manually).",
-                EXIT_AUTH,
-            ) from e
+            raise CliError(AUTH_RECOVERY_MESSAGE, EXIT_AUTH) from e
         if e.code == 409:
             # Resolution-required — surface the same exit code MCP uses.
             try:
@@ -857,10 +886,7 @@ def end_session(cfg: Config, *, client_session_id: str, timeout: float = 30.0) -
         with contextlib.suppress(Exception):
             body_text = e.read().decode("utf-8", errors="replace")
         if e.code == 401:
-            raise CliError(
-                "Authentication failed (401). Run `seaglass auth login` to re-authenticate (or check SEAGLASS_TOKEN if you set it manually).",
-                EXIT_AUTH,
-            ) from e
+            raise CliError(AUTH_RECOVERY_MESSAGE, EXIT_AUTH) from e
         raise CliError(f"HTTP {e.code} from {url}: {body_text or e.reason}", EXIT_GENERIC) from e
     except urllib.error.URLError as e:
         raise CliError(
@@ -1046,3 +1072,12 @@ def poll_device_link(cfg: Config, device_code: str) -> dict[str, Any]:
     """Poll once. Returns `{status, raw_token?, agent_display_name?, interval?}`."""
     url = cfg.base_url.rstrip("/") + "/v1/auth/device/poll"
     return _post_json(url, {"device_code": device_code})
+
+
+def redeem_handoff(cfg: Config, code: str) -> dict[str, Any]:
+    """Exchange a cli_handoff code for a token via `seaglass auth redeem`.
+
+    Returns `{status, raw_token?, agent_display_name?, client_kind?, expires_at?}`.
+    """
+    url = cfg.base_url.rstrip("/") + "/v1/auth/redeem"
+    return _post_json(url, {"code": code})

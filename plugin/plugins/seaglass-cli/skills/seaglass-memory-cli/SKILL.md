@@ -301,8 +301,12 @@ seaglass me --json
 # Register a page without writing a memory about it
 seaglass page create --type projects --title "Project Nova" --json
 
-# Correct a stored fact
-seaglass flag memory_01HX... --action flag_incorrect --reason "wrong manager" --json
+# Correct a stored fact when you have the newer one (one write: capture + retire)
+seaglass memory store --content "Sarah moved to the platform team" \
+  --page "Sarah Chen" --supersedes memory_01HX... --json
+
+# Retract a fact that was never true (no replacement; note is the tombstone label)
+seaglass memory update memory_01HX... --action retract --note "wrong manager, user-confirmed" --json
 
 # Diagnose memory confusion (analysis mode — no resolution)
 seaglass reconsolidate "I think you have the wrong Steve" --json
@@ -330,11 +334,11 @@ seaglass reconsolidate "split Steve" --kind split --details-json '{...}' --json
  "resolved_refs": [...], "created_pages": [...]}
 ```
 
-`seaglass flag --json` returns:
+`seaglass memory update --json` returns:
 
 ```json
-{"success": true, "target_id": "memory_01...", "action": "flag_incorrect",
- "sensitivity": "normal", "affected_page_ids": ["page_01..."]}
+{"success": true, "target_id": "memory_01...", "action": "retract",
+ "retired_reason": "retracted", "affected_page_ids": ["page_01..."]}
 ```
 
 `seaglass reconsolidate` (analysis mode) returns `mode: analysis`,
