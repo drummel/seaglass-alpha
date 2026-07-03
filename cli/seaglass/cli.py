@@ -7,7 +7,7 @@ The command groups:
     search                      — search & read memories, documents, pages
     memory / document           — store_memory / store_document
     annotate                    — attach an annotation memory to a page
-    flag                        — flag_memory (incorrect/outdated/private/redact)
+    memory update               — update_memory (retract/supersede/sensitive/private/redact)
     reconsolidate               — reconsolidate_memory (split/merge/reassign)
     page (create/edit/append/history/revert/move) — wiki page operations
     profile / me                — read profile + behavioral preferences
@@ -60,6 +60,8 @@ from seaglass.client import (
     maybe_notify_update,
     poll_device_link,
     read_resource,
+    read_token_meta,
+    redeem_handoff,
     resolve_base_url,
     resolve_handle,
     session_briefing,
@@ -71,6 +73,7 @@ from seaglass.client import (
     upload_document,
     write_config_url,
     write_token_file,
+    write_token_meta,
 )
 
 # Page types are library-defined data now; the CLI can't enumerate
@@ -80,9 +83,9 @@ _TYPE_HELP = (
     "page type — a kebab-case token defined in the library "
     "(e.g. people / projects / topics, or any type the library defines)"
 )
-_FLAG_ACTIONS = (
-    "flag_incorrect",
-    "flag_outdated",
+_UPDATE_ACTIONS = (
+    "retract",
+    "supersede",
     "flag_sensitive",
     "flag_private",
     "redact",
@@ -212,7 +215,7 @@ def _humanize_dict(d: dict[str, Any]) -> str:
         extra = " (extraction queued)" if d.get("extraction_queued") else ""
         return f"stored document {d['document_id']} (page {d.get('primary_page_id', '-')}){extra}"
     if "target_id" in d and "action" in d:
-        return f"flagged {d['target_id']} as {d['action']}"
+        return f"applied {d['action']} to {d['target_id']}"
     # create_page response: success + id + slug + title + type.
     if "id" in d and "slug" in d and "title" in d and "success" in d:
         return f"created page {d['id']} ({d['slug']} — {d['title']})"
@@ -608,6 +611,7 @@ def cmd_auth_login(args: argparse.Namespace) -> int:
                 stderr("approved but no token returned; retry with `seaglass auth login`.")
                 return EXIT_AUTH
             write_token_file(raw_token)
+            write_token_meta(source="login")
             display = result.get("agent_display_name") or "seaglass-cli"
             if args.json:
                 print(json.dumps({"status": "approved", "agent_display_name": display}, indent=2))
@@ -627,6 +631,68 @@ def cmd_auth_login(args: argparse.Namespace) -> int:
             return EXIT_AUTH
 
     stderr("Timed out waiting for approval.")
+    return EXIT_AUTH
+
+
+def cmd_auth_redeem(args: argparse.Namespace) -> int:
+    """`seaglass auth redeem <code>` — exchange a cli_handoff code for a token.
+
+    The container-friendly half of the handoff flow: an agent with the Seaglass
+    connector calls the `cli_handoff` tool, which returns a single-use code;
+    this command exchanges it for a bearer token and caches it exactly like
+    `auth login` does. No browser, no pre-provisioned secret.
+
+    `--url` pins the target host, same contract as `auth login --url`.
+    """
+    if args.url:
+        pinned = args.url.strip()
+        write_config_url(pinned)
+    cfg = load_config()
+    if args.url:
+        cfg = replace(cfg, base_url=pinned)
+
+    result = redeem_handoff(cfg, args.code.strip())
+    status = result.get("status")
+    if status == "ok":
+        raw_token = result.get("raw_token")
+        if not raw_token:
+            stderr(
+                "Redeem succeeded but no token was returned. Call cli_handoff again for a fresh code."
+            )
+            return EXIT_AUTH
+        write_token_file(raw_token)
+        expires_at = result.get("expires_at")
+        write_token_meta(source="redeem", expires_at=expires_at)
+        display = result.get("agent_display_name") or "seaglass-cli"
+        if args.json:
+            print(
+                json.dumps(
+                    {
+                        "status": "ok",
+                        "agent_display_name": display,
+                        "expires_at": expires_at,
+                    },
+                    indent=2,
+                    default=str,
+                )
+            )
+        else:
+            print(f"Redeemed. Token saved to {TOKEN_FILE} (agent: {display}).")
+            if expires_at:
+                print(f"Expires if unused: {expires_at} (each use extends it).")
+            if args.url:
+                print(f"URL pinned to {pinned} (saved to {CONFIG_FILE}).")
+        return EXIT_OK
+    if status == "expired":
+        stderr(
+            "This code expired or was already used. Call the Seaglass cli_handoff "
+            "tool for a fresh code, then run `seaglass auth redeem <code>` again."
+        )
+        return EXIT_AUTH
+    stderr(
+        "Unknown code. Check the value, or call the Seaglass cli_handoff tool "
+        "for a fresh code and run `seaglass auth redeem <code>` again."
+    )
     return EXIT_AUTH
 
 
@@ -655,10 +721,17 @@ def cmd_auth_status(args: argparse.Namespace) -> int:
     has_env = bool(os.environ.get("SEAGLASS_TOKEN"))
     file_exists = TOKEN_FILE.exists()
     source: str
+    meta = read_token_meta()
+    minted_by = meta.get("source") if isinstance(meta.get("source"), str) else None
+    expires_at = meta.get("expires_at") if isinstance(meta.get("expires_at"), str) else None
     if has_env:
         source = "env (SEAGLASS_TOKEN)"
     elif file_exists:
         source = f"file ({TOKEN_FILE})"
+        if minted_by == "redeem":
+            source += ", via cli_handoff redeem"
+        elif minted_by == "login":
+            source += ", via auth login"
     else:
         source = "none"
     # Human-readable label for where the URL came from (the machine value goes in
@@ -676,6 +749,8 @@ def cmd_auth_status(args: argparse.Namespace) -> int:
                     "url": url,
                     "url_source": url_source,
                     "has_token": bool(cfg.token),
+                    "token_minted_by": minted_by if (file_exists and not has_env) else None,
+                    "token_expires_at": expires_at if (file_exists and not has_env) else None,
                 },
                 indent=2,
             )
@@ -684,6 +759,8 @@ def cmd_auth_status(args: argparse.Namespace) -> int:
         print(f"url:    {url}  (source: {url_source_label})")
         print(f"source: {source}")
         print(f"token:  {'set' if cfg.token else 'not set'}")
+        if file_exists and not has_env and expires_at:
+            print(f"expires: {expires_at} (if unused; each use extends it)")
     return EXIT_OK
 
 
@@ -772,6 +849,8 @@ def cmd_memory_store(args: argparse.Namespace) -> int:
         arguments["capture_context"] = args.capture_context
     if links := _build_links(args):
         arguments["links"] = links
+    if args.supersedes:
+        arguments["supersedes"] = args.supersedes
 
     result = call_tool(cfg, "store_memory", arguments)
     _emit(result, as_json=args.json)
@@ -899,12 +978,14 @@ def cmd_annotate(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def cmd_flag(args: argparse.Namespace) -> int:
+def cmd_update_memory(args: argparse.Namespace) -> int:
     cfg = load_config()
     arguments: dict[str, Any] = {"target_id": args.target_id, "action": args.action}
-    if args.reason:
-        arguments["reason"] = args.reason
-    result = call_tool(cfg, "flag_memory", arguments)
+    if args.successor_id:
+        arguments["successor_id"] = args.successor_id
+    if args.note:
+        arguments["note"] = args.note
+    result = call_tool(cfg, "update_memory", arguments)
     _emit(result, as_json=args.json)
     return EXIT_OK
 
@@ -1804,6 +1885,32 @@ def build_parser() -> argparse.ArgumentParser:
     sp.set_defaults(func=cmd_auth_login)
 
     sp = auth_sub.add_parser(
+        "redeem",
+        help="exchange a cli_handoff code for a token (no browser needed)",
+        description=(
+            "Exchanges a single-use code minted by the Seaglass cli_handoff MCP tool "
+            "for a bearer token and saves it to ~/.config/seaglass/token, exactly like "
+            "`seaglass auth login`. Built for headless environments (cloud containers) "
+            "where the browser login cannot run: the agent calls cli_handoff over its "
+            "connected MCP channel, then runs `seaglass auth redeem <code>`. Codes "
+            "expire after about 5 minutes; the minted token expires if unused for "
+            "7 days, and every use extends it. On a 401, call cli_handoff again and "
+            "redeem the fresh code."
+        ),
+    )
+    sp.add_argument("code", help="the single-use code returned by the cli_handoff tool")
+    sp.add_argument(
+        "--url",
+        default=None,
+        help=(
+            "base URL of the Seaglass server to redeem against; pins it to "
+            "~/.config/seaglass/config.json for future commands (SEAGLASS_URL still wins)."
+        ),
+    )
+    _add_json_flag(sp)
+    sp.set_defaults(func=cmd_auth_redeem)
+
+    sp = auth_sub.add_parser(
         "logout",
         help="forget the locally-stored token (does NOT revoke it server-side)",
     )
@@ -2199,6 +2306,15 @@ def build_parser() -> argparse.ArgumentParser:
             "a sibling annotation memory linked to the primary."
         ),
     )
+    sp.add_argument(
+        "--supersedes",
+        action="append",
+        metavar="ID",
+        help=(
+            "typed ID of a memory or document this newer fact replaces "
+            "(repeatable); each is retired as superseded"
+        ),
+    )
     _add_links(sp)
     _add_json_flag(sp)
     sp.set_defaults(func=cmd_memory_store)
@@ -2328,16 +2444,26 @@ def build_parser() -> argparse.ArgumentParser:
     _add_json_flag(sp)
     sp.set_defaults(func=cmd_annotate)
 
-    # flag
-    sp = sub.add_parser(
-        "flag",
-        help="flag a memory or document (flag_memory)",
+    # memory update — lifecycle / audience actions on a memory or document
+    sp = mem_sub.add_parser(
+        "update",
+        help="retract, supersede, reclassify, or redact a memory or document (update_memory)",
+        description=(
+            "retract: never true, no replacement (kept as a labeled tombstone). "
+            "supersede: a newer stored fact replaces it (needs --successor). "
+            "flag_sensitive / flag_private: audience correction. redact: destroy "
+            "the content. When capturing the newer fact yourself, prefer "
+            "`seaglass memory store --supersedes <id>` over a separate supersede."
+        ),
     )
     sp.add_argument("target_id", help="typed ID, e.g. memory_01HX... or document_01HX...")
-    sp.add_argument("--action", required=True, choices=_FLAG_ACTIONS)
-    sp.add_argument("--reason", help="optional rationale (audit trail)")
+    sp.add_argument("--action", required=True, choices=_UPDATE_ACTIONS)
+    sp.add_argument(
+        "--successor", dest="successor_id", help="replacing memory/document id (supersede only)"
+    )
+    sp.add_argument("--note", help="why; persisted on the tombstone (always fill on retract)")
     _add_json_flag(sp)
-    sp.set_defaults(func=cmd_flag)
+    sp.set_defaults(func=cmd_update_memory)
 
     # send-product-feedback — report a bug / request a feature for Seaglass itself.
     sp = sub.add_parser(
