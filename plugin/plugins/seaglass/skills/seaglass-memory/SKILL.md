@@ -286,11 +286,12 @@ For evidence that isn't itself a page edit, pick by shape:
   author the pages (citing the doc via `evidence_document_ids`); splitting
   the artifact into memories up front scatters it and loses the source.
 
-Always set **`extract` explicitly** on `store_document` — don't rely on the
-default. Pass **`extract=false`** for a raw artifact you want kept verbatim
-(the cases above); pass **`extract=true`** when the user wants the document
-mined into memories now. Being explicit makes the behavior identical in
-server mode and agent mode.
+Leave **`extract` unset** on `store_document` and the server picks the
+default for your mode: agent mode keeps the document verbatim for you to
+mine at author time, server mode extracts it into memories now. Pass it
+only to **override** that default — `extract=false` forces verbatim even in
+server mode (the raw-artifact cases above), `extract=true` forces extraction
+now even in agent mode. You rarely need either.
 
 ## How to call the write tools
 
@@ -363,6 +364,22 @@ record into one — e.g. `library: "work"` for a named library, or
 **materialized on first write**, so you never have to create it). Read
 `seaglass://libraries` to see which libraries you can write to and their
 slugs. You must have write access to the target, or the call is rejected.
+
+## Server next-step hints (`agent_next_steps`)
+
+Some tool responses carry an `agent_next_steps` array: directives the
+server computed for **you**, the calling agent, from what the call just
+did. The same array rides `error.data` when a call fails. They are
+advisory, but usually name real follow-up work you are the only one
+positioned to do.
+
+Each item has a stable `code` you branch on, a second-person `message`
+telling you what to do, and structured `refs` (page ids, names) so you
+never parse targets out of the prose. Read the `code` and `refs`, not the
+sentence. Common ones: author a page you now owe synthesis for, re-author
+pages after a change re-queued them, ask the user to disambiguate a
+reference that matched more than one page, fix cross-links that didn't
+resolve, or re-apply an edit against the current version after a conflict.
 
 ## Sensitivity handling
 

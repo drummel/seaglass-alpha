@@ -13,7 +13,7 @@ the user's AI tools. This skill teaches you to use the `seaglass` CLI for it.
 The CLI is the single auth boundary. Two failure modes to handle:
 
 - **`seaglass: command not found`** — CLI isn't installed. Tell the user once:
-  `uv tool install ./cli` (or `pipx install ./cli`) from a Seaglass clone.
+  install it with `curl -fsSL https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh | bash`.
   Don't retry in a loop.
 - **Exit code 5 from any command, or `seaglass whoami` non-zero** — CLI is
   installed but not authenticated. Offer to run `seaglass auth login` for the

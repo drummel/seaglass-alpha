@@ -47,7 +47,7 @@ if [[ -n "${CLAUDE_ENV_FILE:-}" ]] && command -v seaglass >/dev/null 2>&1; then
 fi
 
 if ! command -v seaglass >/dev/null 2>&1; then
-    emit "The Seaglass plugin is installed but the \`seaglass\` CLI is not on PATH. Tell the user to run \`uv tool install seaglass\` (or \`pipx install seaglass\`) and restart this session."
+    emit "The Seaglass plugin is installed but the \`seaglass\` CLI is not on PATH. Tell the user to run \`curl -fsSL https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh | bash\` and restart this session."
     exit 0
 fi
 

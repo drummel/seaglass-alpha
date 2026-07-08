@@ -31,7 +31,7 @@ The CLI plugin provides:
 1. **Install the `seaglass` CLI** (one-time):
 
    ```bash
-   uv tool install ./cli            # or: pipx install ./cli
+   curl -fsSL https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh | bash   # installs the prebuilt binary
    ```
 
 2. **Authenticate**:

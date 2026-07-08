@@ -32,7 +32,7 @@ returns nothing — it never blocks a session.
 
 ## Install
 
-1. `uv tool install seaglass` (or `pipx install seaglass`), then `seaglass auth
-   login` once.
+1. Install the CLI with `curl -fsSL https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh | bash`, then
+   `seaglass auth login` once.
 2. Drop this directory into Hermes' plugins path and enable the `seaglass`
    plugin (registers the MCP server + the four hooks from `hermes-plugin.json`).
