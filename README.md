@@ -22,11 +22,12 @@ Once connected, ask your agent "What do you know about me?" to confirm it can re
 
 The connector is all most people need. The `seaglass` CLI is an optional add-on for token-cheap, shell-capable clients like Claude Code: it drives the same backend over `bash` instead of injecting a JSON tool schema into every turn, which lowers per-turn cost. It is not required to use Seaglass.
 
-If you want it:
+If you want it, install the prebuilt binary (no toolchain required):
 
 ```bash
-uv tool install ./cli   # or: pipx install ./cli
-seaglass auth login     # opens the browser, caches a token
+# Downloads the right binary for your OS/arch from this repo's Releases and verifies the checksum:
+curl -fsSL https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh | bash
+seaglass auth login   # opens the browser, caches a token
 ```
 
 See [`cli/README.md`](cli/README.md) for the full command surface and [`plugin/README.md`](plugin/README.md) for the plugins (capture skill plus session lifecycle hooks) that build on top of it.
