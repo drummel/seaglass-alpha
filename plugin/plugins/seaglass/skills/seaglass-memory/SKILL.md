@@ -99,15 +99,25 @@ Approach:
    on reverse ETL; does that sound right?"
 5. If `suggested_action` is `no_match`, don't pretend. Ask the user.
 
+**You start already oriented.** The profile you load at session start ends with a
+**Your memory at a glance** map: every library you can reach (with read/write and
+purpose) and, inside each, every collection (page type) *including empty ones*
+with a sample of top-level pages. Use it to pick the right `library` and the
+right collection type on the first write, without guessing or probing. The same
+map is available on demand as the `seaglass://libraries` resource (JSON, with
+each collection's purpose and page count).
+
 **Reads are not library-scoped by default.** `search` spans **every library you
 can read** unless you pass `library`. When the user keeps separate contexts —
 one library per client, a private library, a shared team library — and the
 question is about *one* of them, pass `library: "<name>"` (same name/slug/id you'd
 use on a write) to scope the read to that library. Omit it for a normal
-cross-context recall. A `library` you can't read is a clear error, not a silent
-empty result — so don't guess library names; read `seaglass://libraries` if
-unsure. (Note: `scope_hints` is for **time** bounds only — `after`/`before`; it
-does not scope by library, and an unknown key there is silently dropped.)
+cross-context recall. A `library` you can't read (or that doesn't exist) is a
+clear error; a real but empty library returns `no_match` with a `library_scope`
+marker (its `page_count` and `can_write`), so you can tell empty from missing
+without a write-probe. (Note: `scope_hints` is for **time** bounds only —
+`after`/`before`; to scope by library use `library` above, not `scope_hints` —
+any other `scope_hints` key is now rejected as an error, not silently ignored.)
 
 ### Outline-first reads
 
@@ -139,8 +149,9 @@ ISO-8601 bounds yourself (you know today's date) and pass
 the results; with `query: "*"` you get **timeline mode** — a digest of
 the pages with activity in the window (counts + last-mentioned times),
 newest first. Synthesize the narrative from that digest yourself. The
-response echoes the applied `time_window`; malformed hints are dropped
-(see `dropped_hints`), never an error.
+response echoes the applied `time_window`. Only `after`/`before` are accepted: a
+malformed instant is dropped (see `dropped_hints`), never an error, but an
+unknown key is rejected outright.
 
 > The read tool is `search` (it was once called `get_context`; that name
 > has been removed — use `search`).

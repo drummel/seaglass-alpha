@@ -1,0 +1,20 @@
+{
+  "name": "seaglass",
+  "version": "0.3.0",
+  "description": "Connects your ChatGPT/Codex client to the Seaglass memory layer and teaches it what to capture.",
+  "author": { "name": "Seaglass" },
+  "homepage": "https://github.com/drummel/seaglass-alpha",
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
+  "mcp": "./.codex-plugin/mcp.json",
+  "interface": {
+    "displayName": "Seaglass",
+    "shortDescription": "Persistent memory across your AI tools",
+    "longDescription": "Reads and writes persistent personal context through the Seaglass memory layer, so what you tell one AI tool is available in the next. Bundles the capture skill, the remote memory connector (browser sign-in, no CLI required), and session lifecycle hooks.",
+    "developerName": "Seaglass",
+    "category": "Productivity",
+    "capabilities": ["Memory"],
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  }
+}
