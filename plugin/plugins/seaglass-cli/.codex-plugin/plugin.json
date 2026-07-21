@@ -1,0 +1,19 @@
+{
+  "name": "seaglass-cli",
+  "version": "0.3.0",
+  "description": "Teaches your ChatGPT/Codex client to drive the Seaglass memory layer through the `seaglass` CLI instead of an MCP server. Lower per-turn token cost; same backend.",
+  "author": { "name": "Seaglass" },
+  "homepage": "https://github.com/drummel/seaglass-alpha",
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "Seaglass CLI",
+    "shortDescription": "Persistent memory across your AI tools (CLI transport)",
+    "longDescription": "Drives the Seaglass memory layer through the `seaglass` CLI on PATH instead of an MCP server. Lower per-turn token cost for shell-capable clients; same backend. Requires the `seaglass` CLI installed and authenticated.",
+    "developerName": "Seaglass",
+    "category": "Productivity",
+    "capabilities": ["Memory", "CLI"],
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  }
+}

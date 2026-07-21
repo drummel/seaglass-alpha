@@ -144,6 +144,30 @@ Restart Claude Desktop to pick up the change.
 
 Remove the `seaglass` entry from `mcpServers` in the config file and restart Claude Desktop.
 
+## Install in ChatGPT / Codex
+
+The same two plugins install on ChatGPT/Codex from its plugin surface. One repo ships both manifests: Codex reads `.codex-plugin/plugin.json`, Claude reads `.claude-plugin/plugin.json`, and both share the `skills/` and `hooks/` directories.
+
+> The exact Codex install command, manifest keys, and hook-config validation are docs-grade and should be confirmed against the live [Codex plugin docs](https://developers.openai.com/codex/plugins) and [hooks docs](https://developers.openai.com/codex/hooks) at install time.
+
+### MCP plugin (default) — the OAuth connector, no CLI needed
+
+The `seaglass` plugin bundles the **remote memory connector** as an OAuth MCP server (`.codex-plugin/mcp.json`), so installing the plugin sets up the connection; no `seaglass` CLI is required.
+
+1. Add the Seaglass marketplace / plugin in the Codex plugin surface and install the `seaglass` plugin.
+2. **Trust the hooks.** Installing a plugin does not trust its executable hooks. Open `/hooks`, review the Seaglass session hooks, and trust them, otherwise they stay skipped.
+3. **Authenticate the connector** the first time a memory tool is used: run `codex mcp login seaglass` (or click Authenticate) and approve in the browser. The token is managed by Codex; no token lives in any config file.
+
+The connector points at the hosted Seaglass endpoint (`<server>/mcp`). Hooks fire on Codex's `SessionStart`, `Stop`, and `PreCompact`; Codex has no `SessionEnd`, so an abandoned session is finalized by the server-side TTL sweep rather than at session close.
+
+### CLI plugin (alternative) — token-cheap, shell-capable clients
+
+The `seaglass-cli` plugin drives the same backend through the `seaglass` CLI instead of an MCP server. Install the CLI (`curl -fsSL https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh | bash`) and authenticate (`seaglass auth login`) first, then install the `seaglass-cli` plugin and trust its hooks via `/hooks`.
+
+### Degraded mode
+
+If the connector is unauthenticated (MCP plugin) or the CLI is missing/unauthed (CLI plugin), the session hooks degrade to a one-line nudge and never block the session, exactly as on Claude Code.
+
 ## Verifying the connection
 
 Once installed, ask Claude:
