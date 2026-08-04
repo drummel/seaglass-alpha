@@ -55,6 +55,17 @@ cached token, same auth boundary.
 
 If MCP tools _are_ available, ignore this section.
 
+## A permission denial is the host, not Seaglass
+
+"Denied by user", "The user doesn't want to proceed with this tool use", or
+"[Request interrupted by user for tool use]" is the host's permission layer:
+the call never reached Seaglass. Tell the user, ask them to approve (or allow
+the Seaglass tools, e.g. `/permissions` in Claude Code), then retry the
+identical call. Don't change arguments, switch modes, abandon the task, or
+file product feedback over it. A real Seaglass failure is a structured error
+with a `code` and `message` (plus `agent_next_steps` on `error.data`) or an
+HTTP transport failure.
+
 ## At session start
 
 Read `seaglass://profile`. It returns markdown with four sections:
@@ -80,8 +91,8 @@ can invoke `/recall` to prime the conversation manually. See the
 
 Any time the user references:
 
-- A person by name ("Sarah", "my manager")
-- A project, tool, or initiative ("the launch", "Nova")
+- A person by name ("Ada", "my manager")
+- A project, tool, or initiative ("the launch", "Project Example")
 - A topic that might have context ("the reverse ETL thing")
 - Past conversation ("like we talked about last week")
 
@@ -95,7 +106,7 @@ Approach:
    skips a second name resolution; fall back to the disambiguated name only if
    you have no id.
 4. If `suggested_action` is `proceed_with_low_confidence`, introduce what
-   Seaglass returned as tentative — "I vaguely recall you working with Sarah
+   Seaglass returned as tentative — "I vaguely recall you working with Ada
    on reverse ETL; does that sound right?"
 5. If `suggested_action` is `no_match`, don't pretend. Ask the user.
 
@@ -143,9 +154,12 @@ are different requests:
   intentionally small; opt in when you need it.
 
 **Time-scoped recall** (`scope_hints`): for "what happened last week?",
-"what did I work on in April?", "catch me up since Monday" — compute the
-ISO-8601 bounds yourself (you know today's date) and pass
-`scope_hints: {after, before}`. With a normal query the window narrows
+"what did I work on in April?", "catch me up since Monday", compute the
+ISO-8601 bounds from the **current date given to you at session start**
+("Today's date is ...") and pass `scope_hints: {after, before}`. Do not
+guess the date from memory: a window anchored to the wrong year silently
+returns nothing. If you were not given the current date, ask the user for
+the window rather than inventing one. With a normal query the window narrows
 the results; with `query: "*"` you get **timeline mode** — a digest of
 the pages with activity in the window (counts + last-mentioned times),
 newest first. Synthesize the narrative from that digest yourself. The
@@ -215,6 +229,37 @@ Within whatever the `Writing` instruction allows, trigger on:
 - Corrections to prior statements.
 - Files, pasted content, or URLs worth keeping.
 
+**Recall first when the fact changes something already on record.** Most captures are new
+information and go straight to `store_memory`. Look first only when the statement *updates
+or contradicts* something you already know: a title that changed, a decision reversed, a
+status that moved. Those writes have to replace the old claim rather than sit beside it.
+
+- The new fact refines what is stored: capture the nuance, don't restate the whole thing.
+- The new fact *contradicts* what is stored: that is a correction, not a second opinion.
+  Declare it with `supersedes: [<old_id>]` so the old claim is retired instead of left to
+  argue with the new one.
+- You already looked it up this session: write directly. Don't re-run a search you just ran.
+
+Three things this does *not* mean:
+
+- **A plainly new fact needs no lookup.** "Priya just joined as our data lead" is new
+  information. Write it.
+- **An empty search is an answer, not a blocker.** If you do look and find nothing, that
+  settles it: capture the fact as new. Never turn a miss into an interrogation. Don't ask
+  the user which Ada they meant just because no page exists yet.
+- **This is a capture rule, not a preamble for everything.** Structural and corrective
+  tools (`move_page`, `reconsolidate_memory`, `edit_section`, `revert_page`) already take
+  an explicit target. Don't front them with a lookup you don't need.
+
+Either way, name the target: pass `primary_page` on every `store_memory`, the resolved slug
+when you have one, the subject's name when you don't.
+
+You are not on your own here. Every `store_memory` response carries `related_context`, the
+pages nearest what you just wrote (excluding the one you wrote to). That is the safety net
+for the writes you didn't look up first: if it surfaces something you should have written
+differently, fix it on the next turn, append to the right page, or supersede the claim you
+contradicted.
+
 Do not write:
 
 - Small talk, greetings, conversational filler.
@@ -223,16 +268,22 @@ Do not write:
 
 **The `Asking` gate is evaluated last and overrides every trigger above.**
 When `Asking` says to confirm before writing about other people, a clear
-factual statement about a third party is a cue to *ask*, not to write —
+factual statement about a third party is a cue to *ask*, not to write,
 that clarity is exactly what the gate is for, not an exception to it. Name
 what you'd record, wait for an explicit yes, then call `store_memory`.
+
+**`event_time` is for a date you can ground, not a guess.** Set it only from
+an explicit date in the conversation, or by resolving a relative phrase ("last
+week") against the current date you were given at session start. If you have
+neither, omit `event_time`, the store time stands in. Never fabricate a precise
+timestamp from a vague phrase; a wrong `event_time` misdates the memory forever.
 
 
 ## House voice (when authoring pages)
 
 When you create or edit a wiki page directly via `edit_page`,
 `edit_section`, `append_section`, or `create_page`, follow the same
-brief Seaglass's server-side synthesis worker follows. Six rules,
+brief Seaglass's server-side synthesis worker follows. Seven rules,
 identical to `synthesis/prompts.py::PAGE_SYNTHESIS_SYSTEM` so the
 wiki reads coherently regardless of which writer wrote which page:
 
@@ -240,19 +291,22 @@ wiki reads coherently regardless of which writer wrote which page:
    entry about someone the user actually knows.
 2. **Wrap every cross-link.** `[[Canonical Name]]` for a flat page,
    `[[parent/child]]` for a nested sub-page. Use the canonical form,
-   not a partial — `[[Sarah Chen]]`, not `[[Sarah]]`.
+   not a partial: `[[Ada Example]]`, not `[[Ada]]`.
 3. **Don't invent.** Every claim should trace to a memory, document,
    or fact the user has told you directly. When you cite, pass the
-   typed IDs as `evidence_memory_ids` / `evidence_document_ids` —
+   typed IDs as `evidence_memory_ids` / `evidence_document_ids`,
    surfaced in the audit trail.
 4. **Surface contradictions.** If sources disagree, say so plainly
-   ("Two notes disagree about X — one says A, another says B")
+   ("Two notes disagree about X: one says A, another says B")
    rather than picking a side.
 5. **End with a "See also" list** of related pages worth
-   exploring next — co-mentioned people, parent topics, recent
+   exploring next: co-mentioned people, parent topics, recent
    projects.
-6. **Keep the one-line summary tight and indexable** — it shows up in
+6. **Keep the one-line summary tight and indexable.** It shows up in
    outlines, search results, and the parent page's subpages list.
+7. **No em dashes.** Use a comma, colon, or period instead. The long
+   dash character never belongs in a page body, one-line summary, or
+   edit summary you author.
 
 ## When to author a page directly
 
@@ -304,11 +358,27 @@ only to **override** that default — `extract=false` forces verbatim even in
 server mode (the raw-artifact cases above), `extract=true` forces extraction
 now even in agent mode. You rarely need either.
 
+### Write what the sources support
+
+Authoring is the job; supplying the specifics nobody gave you is not. Everything
+on a page traces to something: the user said it, a tool returned it, or a cited
+document contains it.
+
+- Don't fill a heading because the template has one. Thin sources read thin.
+- Don't explain a mechanism you weren't told. "Redis is the source of truth" is
+  the fact; how it is wired is not.
+- Don't attribute a role, an owner, or a rationale nobody stated.
+- Don't write date arithmetic as a date of record. "Shipped last week" stays
+  "last week", or "the week of 2026-07-20".
+
+Mark inference as inference ("this suggests", "worth confirming"). An unhedged
+guess is a fabrication with good posture.
+
 ## How to call the write tools
 
 ### Three forms of page reference
 
-* **Typed slug** — `projects/seaglass/competitors`, `people/sarah-chen`.
+* **Typed slug** — `projects/seaglass/competitors`, `people/ada-example`.
   Always slash-separated, lowercase kebab-case, first segment is the page
   type. Types are **library-defined** and plural by convention
   (`people` / `projects` / `topics`, plus whatever the library adds); they
@@ -317,7 +387,7 @@ now even in agent mode. You rarely need either.
   Seaglass never auto-creates ancestors.
 * **Typed id** — `page_01HX...`. Use when you've already resolved a page
   and want to pin to that specific row.
-* **Bare title** — `"Sarah Chen"`. Free-text; resolves by title +
+* **Bare title** — `"Ada Example"`. Free-text; resolves by title +
   aliases. May surface `resolution_required` if multiple pages share
   the title (cross-type collisions are first-class — `projects/anthropic`
   and `topics/anthropic` can coexist). When you're creating a NEW page
@@ -347,12 +417,12 @@ Example:
 
 ```json
 {
-  "content": "Sarah is leading the Q3 launch on Project Nova.",
-  "primary_page": "people/sarah-chen",
+  "content": "Ada is leading the Q3 launch on Project Example.",
+  "primary_page": "people/ada-example",
   "source_type": "primary",
   "source_origin": {"kind": "conversation"},
   "links": {
-    "projects": ["projects/project-nova"],
+    "projects": ["projects/project-example"],
     "topics": ["Q3 launch"]
   }
 }
@@ -478,9 +548,13 @@ If the user asks you to change how you read, write, ask, or narrate
 > (CLI: `seaglass profile`). To make changes just for me in this integration,
 > use <agent_profile_url> (CLI: `seaglass profile agent <agent_id>`)."
 
-Both URLs and CLI hints are spelled out in the `# Adjusting how I behave`
-section of `seaglass://profile` — render them verbatim from the resource
-rather than guessing the format.
+Both URLs and CLI hints arrive in the `## Adjusting how I behave` section of
+the profile you were already given: at session start, and again on the
+preferences block that rides your first tool call. Render them verbatim from
+what you have. **Don't go looking for them.** There is no tool that fetches a
+resource, so searching for `seaglass://profile` finds nothing; it only queries
+the user's memories for a URI. If you genuinely don't have the section, say the
+settings live in the Seaglass web app rather than inventing a URL.
 
 When the user says "yes for this session only," adjust your behavior in
 the conversation without writing anything. The change does NOT persist —
@@ -507,7 +581,7 @@ end-of-session bulk capture, not for replacing per-turn writes.
 Memory self-corrects through retirement: a retired row is kept as a labeled
 tombstone (visible in search, out of synthesis). Three cases, one rule each:
 
-- **The user gives you the newer fact** ("actually Sarah moved to platform"):
+- **The user gives you the newer fact** ("actually Ada moved to platform"):
   search for the stale memory, then `store_memory` the new fact with
   `supersedes: [<old_id>]`. One write captures the correction and retires what
   it replaces. Do not use `update_memory` for this.

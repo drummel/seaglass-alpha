@@ -55,10 +55,10 @@ Use the existing `seaglass-memory` skill's tool calls (`store_memory`,
 
    ```json
    {
-     "content": "Sarah Chen confirmed as PM of Project Nova at the April 15 kickoff. Previously CTO at Acme; the user noted this came up alongside her budget pushback the week before.",
-     "primary_page": "people/sarah-chen",
-     "links": {"projects": ["projects/project-nova"], "topics": ["Q3 launch"]},
-     "capture_context": "End-of-session checkpoint after a 30-minute review of the Nova staffing plan; user wanted Sarah's role and the Acme background preserved together."
+     "content": "Ada Example confirmed as PM of Project Example at the April 15 kickoff. Previously CTO at Example Corp; the user noted this came up alongside her budget pushback the week before.",
+     "primary_page": "people/ada-example",
+     "links": {"projects": ["projects/project-example"], "topics": ["Q3 launch"]},
+     "capture_context": "End-of-session checkpoint after a 30-minute review of the Project Example staffing plan; user wanted Ada's role and the Example Corp background preserved together."
    }
    ```
 
@@ -90,17 +90,32 @@ After all writes complete, give the user a short summary:
 
 ```
 Stored 4 memories and 1 document:
-  - Sarah Chen (page_01...) — Nova PM confirmation + Acme background
-  - Project Nova (page_01...) — April 15 kickoff outcomes
+  - Ada Example (page_01...) — Project Example PM confirmation + Example Corp background
+  - Project Example (page_01...) — April 15 kickoff outcomes
   - Q3 launch (page_01...) — budget pushback context
   - User preference (memory_01...) — async reviews over sync
-  - Nova v3 spec (document_01...) — pasted, supersedes Tuesday's draft
+  - Project Example v3 spec (document_01...) — pasted, supersedes Tuesday's draft
 Skipped 2 items already in Seaglass.
 ```
 
 Keep it tight — IDs and one-line rationales, no ceremony. If anything
-looked ambiguous (multiple people named Sarah, unclear which project), say
+looked ambiguous (multiple people named Ada, unclear which project), say
 so explicitly and ask the user before writing.
+
+## Examples here are illustrations, never sources
+
+Every name in the examples is fictional and reserved: **Ada Example**, **Bo
+Example**, **Project Example**, **Example Corp**. They show the shape of a call,
+never a fact.
+
+Never carry a detail from an example into a write, a page, or an answer. If a
+detail did not come from this conversation, a tool result, or a document, you do
+not have it. When the user gives only a first name, write only that; do not
+complete it to a surname you saw here.
+
+This governs where your *content* comes from, not whether to look something up.
+The recall rules above are unchanged: a statement that updates or contradicts
+something on record still gets a search first.
 
 ## What you MUST NOT do
 

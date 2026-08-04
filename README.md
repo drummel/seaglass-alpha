@@ -8,13 +8,13 @@ This repository is the installable surface: the plugins, the `seaglass` CLI, and
 
 Add the Seaglass connector URL (`<server>/mcp`) as a custom connector in your client, then approve the connection in the browser. That is the whole setup. It works in claude.ai, Claude Desktop, Cowork, Cursor, and Claude Code, and a connector added once reaches the web, desktop, and mobile.
 
-For this alpha, the hosted server is `https://seaglass-api-stg.onrender.com`, so the connector URL is:
+For this alpha, the hosted server is `https://api-stg.seaglassai.com`, so the connector URL is:
 
 ```
-https://seaglass-api-stg.onrender.com/mcp
+https://api-stg.seaglassai.com/mcp
 ```
 
-The Connections page in the Seaglass web app has a one-click "Add to Claude" button and copyable recipes for every client, so you rarely need to type the URL by hand.
+The Connections page in the Seaglass web app (`https://stg.seaglassai.com/connections`) has a one-click "Add to Claude" button and copyable recipes for every client, so you rarely need to type the URL by hand.
 
 Once connected, ask your agent "What do you know about me?" to confirm it can read from your library.
 
@@ -37,7 +37,7 @@ See [`cli/README.md`](cli/README.md) for the full command surface and [`plugin/R
 | Path | What |
 |---|---|
 | `cli/` | The `seaglass` command-line client. |
-| `plugin/` | The Claude plugins: capture skill, session hooks, and CLI transport. |
+| `plugin/` | The plugins for Claude and Codex: capture skill, session hooks, and CLI transport. |
 | `.claude-plugin/marketplace.json` | The plugin marketplace manifest. |
 
 This is an install-only mirror. The API, web app, and internal docs live in the main Seaglass repository.
