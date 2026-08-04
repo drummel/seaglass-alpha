@@ -103,9 +103,9 @@ user wants kept:
 
 ```bash
 seaglass memory store \
-  --page "Sarah Chen" --type people \
-  --content "Sarah is leading the Q3 launch on Project Nova." \
-  --link-projects "Project Nova" --link-topics "Q3 launch" --json
+  --page "Ada Example" --type people \
+  --content "Ada is leading the Q3 launch on Project Example." \
+  --link-projects "Project Example" --link-topics "Q3 launch" --json
 ```
 
 Pass **names**, not IDs, for `--page` unless you've already resolved one.
@@ -116,11 +116,11 @@ use `seaglass document store --file <path>` or pipe via `--stdin`.
 
 | Flag | Category | Example |
 |---|---|---|
-| `--link-people NAME` | person | `--link-people "Sarah Chen"` |
-| `--link-projects NAME` | project | `--link-projects "Project Nova"` |
+| `--link-people NAME` | person | `--link-people "Ada Example"` |
+| `--link-projects NAME` | project | `--link-projects "Project Example"` |
 | `--link-topics NAME` | topic | `--link-topics "Q3 launch"` |
 
-All three are repeatable (`--link-people Sarah --link-people Bob`). Categories
+All three are repeatable (`--link-people Ada --link-people Bob`). Categories
 outside this set are silently ignored — there's no `--link-custom` or
 `--link-pages`. Each linked page gets a synthesis re-queue, so don't
 link pages the memory doesn't actually mention.
@@ -163,10 +163,10 @@ In agent mode, the flow for a meaningful fact is:
 ```bash
 # 1. Read the current state + version (omitted --base-version below
 #    causes `page edit` to fetch it for you automatically).
-seaglass search "Sarah Chen" --json
+seaglass search "Ada Example" --json
 
 # 2. Edit a single section, citing the captures that justify it.
-seaglass page edit "Sarah Chen" \
+seaglass page edit "Ada Example" \
   --section "Current role" \
   --content "Staff designer at [[Anthropic]]. Started 2026-05-06." \
   --evidence memory_01HX... --evidence document_01HX... \
@@ -183,8 +183,8 @@ want Seaglass extracting on your behalf.
 When you want to register a page *without* writing a memory about it:
 
 ```bash
-seaglass page create --type projects --title "Project Nova" --json
-seaglass page create --type people --title "Sarah Chen" --identity-hint "Linear PM" --json
+seaglass page create --type projects --title "Project Example" --json
+seaglass page create --type people --title "Ada Example" --identity-hint "Linear PM" --json
 ```
 
 `--type` is a library-defined page type: `people` / `projects` /
@@ -207,8 +207,8 @@ surrounding scaffolding — when, where, who else was involved, the
 rationale, what makes it notable. Don't strip context to make a tighter
 claim. Five rich memories beat fifteen one-liners.
 
-❌ `"Sarah is the PM of Nova."`
-✅ `"Sarah Chen was confirmed as PM of Project Nova at the April 15 kickoff. Her prior role was CTO at Acme; the user noted this came up alongside the budget pushback she raised the week before."`
+❌ `"Ada is the PM of Project Example."`
+✅ `"Ada Example was confirmed as PM of Project Example at the April 15 kickoff. Her prior role was CTO at Example Corp; the user noted this came up alongside the budget pushback she raised the week before."`
 
 ### Capture context — what the conversation knows that the doc doesn't
 
@@ -222,14 +222,14 @@ richer.
 ```bash
 # A pasted spec — the agent knows what the user said about it
 seaglass document store --file ./nova-spec.md \
-  --page "Project Nova" --type projects \
+  --page "Project Example" --type projects \
   --capture-context "User pasted this right after saying 'this is the v3 spec, supersedes the one we discussed Tuesday'." --json
 
 # A captured fact — the agent has the surrounding theme
 seaglass memory store \
-  --page "Sarah Chen" --type people \
-  --content "Sarah pushed back on the Q3 budget allocation." \
-  --capture-context "Came up during a 30-min walk-through of the Nova roadmap; same session as the PM confirmation." --json
+  --page "Ada Example" --type people \
+  --content "Ada pushed back on the Q3 budget allocation." \
+  --capture-context "Came up during a 30-min walk-through of the Project Example roadmap; same session as the PM confirmation." --json
 ```
 
 One or two sentences of context is the sweet spot — not a paragraph.
@@ -252,8 +252,8 @@ mattered was Y"), use `seaglass annotate <target_id> "<note>" --page "<name>"`:
 
 ```bash
 seaglass annotate document_01HX... \
-  "User clarified that this spec was the one Sarah objected to in the budget discussion." \
-  --page "Project Nova" --json
+  "User clarified that this spec was the one Ada objected to in the budget discussion." \
+  --page "Project Example" --json
 ```
 
 The target_id can be a `document_*` or `memory_*`. Annotations participate
@@ -280,7 +280,7 @@ full matrix.
 ```bash
 # Read
 seaglass search "<query>" --json
-seaglass search "Sarah Chen" --type people --limit 5 --json
+seaglass search "Ada Example" --type people --limit 5 --json
 
 # Write a memory
 seaglass memory store --page "<name>" --type people --content "<fact>" --json
@@ -299,11 +299,11 @@ seaglass document store --file ./long-transcript.md --via-upload --page "Q3 stan
 seaglass me --json
 
 # Register a page without writing a memory about it
-seaglass page create --type projects --title "Project Nova" --json
+seaglass page create --type projects --title "Project Example" --json
 
 # Correct a stored fact when you have the newer one (one write: capture + retire)
-seaglass memory store --content "Sarah moved to the platform team" \
-  --page "Sarah Chen" --supersedes memory_01HX... --json
+seaglass memory store --content "Ada moved to the platform team" \
+  --page "Ada Example" --supersedes memory_01HX... --json
 
 # Retract a fact that was never true (no replacement; note is the tombstone label)
 seaglass memory update memory_01HX... --action retract --note "wrong manager, user-confirmed" --json
@@ -319,11 +319,11 @@ seaglass reconsolidate "split Steve" --kind split --details-json '{...}' --json
 `seaglass search --json` returns one of:
 
 ```json
-{"mode": "page",     "page":     {"id": "page_01...", "slug": "people/sarah-chen", "title": "Sarah Chen", "synthesis_markdown": "..."}}
+{"mode": "page",     "page":     {"id": "page_01...", "slug": "people/ada-example", "title": "Ada Example", "synthesis_markdown": "..."}}
 {"mode": "document", "document": {"id": "document_01...", "title": "...", "content": "..."}}
 {"mode": "memory",   "memory":   {"id": "memory_01...", "content": "...", "primary_page_id": "page_01..."}}
 {"mode": "index",    "results":  [{"id": "memory_01...", "score": 0.84, "preview": "..."}], "suggested_action": "use_top_candidate"}
-{"mode": "resolution_required", "results": [...], "suggested_clarification_question": "Did you mean Sarah Chen (Linear PM) or Sarah Chen (the founder)?"}
+{"mode": "resolution_required", "results": [...], "suggested_clarification_question": "Did you mean Ada Example (Linear PM) or Ada Example (the founder)?"}
 {"mode": "no_match", "results": []}
 ```
 
@@ -355,6 +355,41 @@ apply call.
 | 3 | not found | tell the user honestly; don't fabricate |
 | 4 | resolution required (ambiguous page) | ask the user the clarification question shown in stderr / `--json` data |
 | 5 | auth failure | tell the user to run `seaglass auth login` (or, if they're on the `SEAGLASS_TOKEN` env-var path, to check the env var); don't retry |
+
+A denial with no exit code ("Denied by user", "The user doesn't want to
+proceed with this tool use") is the host's permission layer: the command
+never ran. Ask the user to approve, then rerun it unchanged. Real `seaglass`
+failures exit with a code above and explain themselves on stderr.
+
+## You never author command output
+
+A command has run only when you ran it and received its output. Until then you
+have read nothing and can report nothing.
+
+- **If you can't run commands here, propose the command and stop.** Show it, say
+  what it returns, and let the user run it and paste the result back. Waiting is
+  the correct end of your turn.
+- **Never write out a result you didn't receive**: not as an illustration, not
+  as a guess, not in a transcript-shaped block.
+
+A fabricated answer is worse than none, because it wears the authority of a
+lookup. "I can't run that from here, could you paste the output?" is always
+available.
+
+## Examples here are illustrations, never sources
+
+Every name in the examples is fictional and reserved: **Ada Example**, **Bo
+Example**, **Project Example**, **Example Corp**. They show the shape of a call,
+never a fact.
+
+Never carry a detail from an example into a write, a page, or an answer. If a
+detail did not come from this conversation, a tool result, or a document, you do
+not have it. When the user gives only a first name, write only that; do not
+complete it to a surname you saw here.
+
+This governs where your *content* comes from, not whether to look something up.
+The recall rules above are unchanged: a statement that updates or contradicts
+something on record still gets a search first.
 
 ## What you MUST NEVER do
 

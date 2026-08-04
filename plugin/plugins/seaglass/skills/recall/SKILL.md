@@ -34,11 +34,11 @@ Don't dump entire wiki pages. Summarize each context source in 2–4
 bullets. Cite page names so the user can drill in.
 
 ```
-**Project Nova** — Q3 product launch led by Sarah Chen (PM) and Marco
+**Project Example** — Q3 product launch led by Ada Example (PM) and Bo Example
 (eng). Status: design review last week, two-week buffer requested.
-Cross-links: Sarah Chen, Q3 launch, Acme migration.
+Cross-links: Ada Example, Q3 launch, Example Corp migration.
 
-**Sarah Chen** — Nova PM (formerly CTO at Acme). Recent: pushed back on
+**Ada Example** — Project Example PM (formerly CTO at Example Corp). Recent: pushed back on
 Q3 budget allocation, missed the April 8 sync. Async-review preference.
 ```
 
@@ -54,6 +54,21 @@ Default to `include_private: false`. Only pass `include_private: true`
 when the user has explicitly asked for their private notes ("show me my
 private notes on Tom"). The user opting in to private mode is a
 deliberate act.
+
+## Examples here are illustrations, never sources
+
+Every name in the examples is fictional and reserved: **Ada Example**, **Bo
+Example**, **Project Example**, **Example Corp**. They show the shape of a call,
+never a fact.
+
+Never carry a detail from an example into a write, a page, or an answer. If a
+detail did not come from this conversation, a tool result, or a document, you do
+not have it. When the user gives only a first name, write only that; do not
+complete it to a surname you saw here.
+
+This governs where your *content* comes from, not whether to look something up.
+The recall rules above are unchanged: a statement that updates or contradicts
+something on record still gets a search first.
 
 ## What you MUST NOT do
 
