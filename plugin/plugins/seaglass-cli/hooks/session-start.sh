@@ -67,17 +67,26 @@ if [[ -z "$PROFILE" ]]; then
     exit 0
 fi
 
+# The model does not reliably know the current date and will otherwise
+# fabricate one (anchoring to its training era), corrupting event_time on
+# writes and scope_hints windows on time-scoped reads. Give it the real date.
+DATELINE="Today's date is $(date -u +%Y-%m-%d) (UTC). Use it to resolve any relative time the user mentions (\"last week\", \"yesterday\", \"in April\"); never guess the date."
+
 # Resume briefing: append a digest of this agent's previous session so the
 # conversation starts with continuity. Best-effort and deterministic (no LLM);
 # empty when there's no prior session worth summarizing, in which case we emit
 # the profile alone.
 BRIEFING="$(timeout 10 seaglass session briefing 2>/dev/null || true)"
 if [[ -n "$BRIEFING" ]]; then
-    emit "$PROFILE
+    emit "$DATELINE
+
+$PROFILE
 
 $BRIEFING"
     exit 0
 fi
 
-emit "$PROFILE"
+emit "$DATELINE
+
+$PROFILE"
 exit 0

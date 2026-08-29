@@ -129,8 +129,8 @@ link pages the memory doesn't actually mention.
 
 When you author a wiki page directly via `seaglass page edit` /
 `page append` / `page create`, follow the same brief Seaglass's
-server-side synthesis worker uses — six rules identical to
-`synthesis/prompts.py::PAGE_SYNTHESIS_SYSTEM` so the wiki reads
+server-side synthesis worker uses — seven rules identical to
+`synthesis/prompts/page.py::PAGE_SYNTHESIS_SYSTEM` so the wiki reads
 coherently regardless of which writer wrote which page:
 
 1. **Prose, not bullets.** The page should read like an
@@ -143,8 +143,15 @@ coherently regardless of which writer wrote which page:
    surfaces them in the wiki UI.
 4. **Surface contradictions.** When sources disagree, say so plainly
    instead of picking a side.
-5. **End with a "See also" list** of related pages.
+5. **End with a "See also" list** of related pages, but only pages
+   that genuinely relate, drawn from your sources or pages you
+   actually found. When nothing does, omit the section rather than
+   invent an entry; an example slug from these instructions is
+   never a real entry.
 6. **Keep the one-line summary tight and indexable.**
+7. **No em dashes.** Use a comma, colon, or period instead. The
+   long dash character never belongs in a page body, one-line
+   summary, or edit summary you author.
 
 ## When to author a page directly
 
@@ -333,6 +340,12 @@ seaglass reconsolidate "split Steve" --kind split --details-json '{...}' --json
 {"success": true, "memory_id": "memory_01...", "primary_page_id": "page_01...",
  "resolved_refs": [...], "created_pages": [...]}
 ```
+
+**A failed write is reported, never papered over.** A non-zero exit from
+`memory store` / `document store` (or a response without `success: true`)
+means the fact is NOT in Seaglass. One quiet retry is fine when the error
+looks transient; after that, tell the user plainly that the capture did
+not happen and why. Never describe a failed or unattempted write as saved.
 
 `seaglass memory update --json` returns:
 
