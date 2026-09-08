@@ -10,9 +10,18 @@
 set -uo pipefail
 . "${BASH_SOURCE[0]%/*}/lib/runtime.sh"
 
-# Emit SessionStart context in the host's native shape.
+# The model does not reliably know the current date and will otherwise
+# fabricate one (anchoring to its training era), corrupting event_time on
+# writes and scope_hints windows on time-scoped reads. Every emission leads
+# with it, the degraded paths included: an empty profile still leaves a
+# working, authenticated CLI that can write with a fabricated date.
+DATELINE="Today's date is $(date -u +%Y-%m-%d) (UTC). Use it to resolve any relative time the user mentions (\"last week\", \"yesterday\", \"in April\"); never guess the date."
+
+# Emit SessionStart context in the host's native shape, always led by the dateline.
 emit() {
-    local ctx="$1"
+    local ctx="$DATELINE
+
+$1"
     if sg_is_claude_host; then
         # Claude Code's documented SessionStart output contract.
         python3 -c 'import json,sys; print(json.dumps({"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":sys.argv[1]}}))' "$ctx"

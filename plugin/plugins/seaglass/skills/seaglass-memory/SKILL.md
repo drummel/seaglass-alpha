@@ -238,7 +238,9 @@ status that moved. Those writes have to replace the old claim rather than sit be
 - The new fact *contradicts* what is stored: that is a correction, not a second opinion.
   Declare it with `supersedes: [<old_id>]` so the old claim is retired instead of left to
   argue with the new one.
-- You already looked it up this session: write directly. Don't re-run a search you just ran.
+- You already looked it up this session: write directly. Don't re-run a search you just
+  ran, and don't re-run it in pieces: an empty recall answers every narrower form of the
+  same lookup, so decomposing it into sub-queries and searching again buys nothing. Write.
 
 Three things this does *not* mean:
 
@@ -259,6 +261,12 @@ pages nearest what you just wrote (excluding the one you wrote to). That is the 
 for the writes you didn't look up first: if it surfaces something you should have written
 differently, fix it on the next turn, append to the right page, or supersede the claim you
 contradicted.
+
+**A failed write is reported, never papered over.** If `store_memory` or `store_document`
+returns an error, the fact is NOT in Seaglass, and the user must not walk away believing
+it is: they will drop it from their own working memory and it is gone. One quiet retry is
+fine when the error looks transient. After that, say plainly that the capture did not
+happen and why. Never describe a failed or unattempted write as saved.
 
 Do not write:
 
@@ -284,7 +292,7 @@ timestamp from a vague phrase; a wrong `event_time` misdates the memory forever.
 When you create or edit a wiki page directly via `edit_page`,
 `edit_section`, `append_section`, or `create_page`, follow the same
 brief Seaglass's server-side synthesis worker follows. Seven rules,
-identical to `synthesis/prompts.py::PAGE_SYNTHESIS_SYSTEM` so the
+identical to `synthesis/prompts/page.py::PAGE_SYNTHESIS_SYSTEM` so the
 wiki reads coherently regardless of which writer wrote which page:
 
 1. **Prose, not bullets.** The page should read like an encyclopedia
@@ -301,7 +309,10 @@ wiki reads coherently regardless of which writer wrote which page:
    rather than picking a side.
 5. **End with a "See also" list** of related pages worth
    exploring next: co-mentioned people, parent topics, recent
-   projects.
+   projects. Only pages that genuinely relate, drawn from your
+   sources or the pages you actually found. When nothing does,
+   omit the section: an empty See also beats an invented one, and
+   an example slug from these instructions is never a real entry.
 6. **Keep the one-line summary tight and indexable.** It shows up in
    outlines, search results, and the parent page's subpages list.
 7. **No em dashes.** Use a comma, colon, or period instead. The long
