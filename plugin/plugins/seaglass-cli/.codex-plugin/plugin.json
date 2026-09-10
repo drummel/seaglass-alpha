@@ -1,6 +1,6 @@
 {
   "name": "seaglass-cli",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Teaches your ChatGPT/Codex client to drive the Seaglass memory layer through the `seaglass` CLI instead of an MCP server. Lower per-turn token cost; same backend.",
   "author": { "name": "Seaglass" },
   "homepage": "https://github.com/drummel/seaglass-alpha",
