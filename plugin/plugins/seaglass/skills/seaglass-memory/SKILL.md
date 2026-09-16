@@ -238,9 +238,10 @@ status that moved. Those writes have to replace the old claim rather than sit be
 - The new fact *contradicts* what is stored: that is a correction, not a second opinion.
   Declare it with `supersedes: [<old_id>]` so the old claim is retired instead of left to
   argue with the new one.
-- You already looked it up this session: write directly. Don't re-run a search you just
-  ran, and don't re-run it in pieces: an empty recall answers every narrower form of the
-  same lookup, so decomposing it into sub-queries and searching again buys nothing. Write.
+- Once recall comes back empty, write. A narrower follow-up read or two is fine when it
+  might surface a cross-link candidate, but the empty result stands: don't wait on more
+  searches before capturing. When recall *hits*, write to the page it returned instead of
+  searching again.
 
 Three things this does *not* mean:
 
@@ -424,6 +425,12 @@ When a memory mentions multiple pages, populate `links` with the
 secondary pages (people the user is not primarily describing, projects
 peripherally involved, etc.). This is what lets the wiki cross-link densely.
 
+`links` does more than draw an edge. Every page you list is re-synthesized
+on this memory's account **and reads the memory as evidence**, so it can
+state the fact and cite it in its source trail. Declare the pages the
+observation genuinely supports; a name it only mentions in passing is a
+page that will now quote it.
+
 Example:
 
 ```json
@@ -442,6 +449,38 @@ Example:
 Mixing slug refs and bare titles in `links` is fine — slugs are exact and
 free-text falls back to title resolution.
 
+**Or name the page inline.** A `[[Canonical Name]]` or `[[type/slug]]`
+written into `content` attaches the same way, which is the natural form
+when the page is part of the sentence:
+
+```json
+{
+  "content": "Ada moved the launch to October after the [[Project Example]] review.",
+  "primary_page": "people/ada-example",
+  "source_type": "primary",
+  "source_origin": {"kind": "conversation"}
+}
+```
+
+Only links that resolve attach; an ambiguous or unknown name stays literal
+text and binds nothing. Use whichever form fits: `links` when you are
+listing pages, `[[...]]` when you are writing a sentence.
+
+**Never search to fill these in.** Write the name the user used and let the
+server resolve it: that is what resolution is for, an unresolved name costs
+nothing (it stays literal), and a wrong guess is corrected by the related
+pages the write hands back. Linking is a thing you do *while* capturing, not
+a reason to go look something up first.
+
+**Bracketing a name is not a licence to rewrite the observation.** Put the
+brackets around a name the sentence already contains and leave every other
+word alone. This matters most for `<private>...</private>`: Seaglass forces
+`sensitivity: private` by finding those tags in `content`, so an observation
+you paraphrased while adding a link can arrive with the tags gone and the
+server's guarantee with them. If a name you want to link sits inside a
+private span, leave the span exactly as the user wrote it and use `links`
+instead.
+
 ### `library` parameter (where a write lands)
 
 `store_memory`, `store_document`, and `create_page` take an optional
@@ -456,6 +495,17 @@ record into one — e.g. `library: "work"` for a named library, or
 **materialized on first write**, so you never have to create it). Read
 `seaglass://libraries` to see which libraries you can write to and their
 slugs. You must have write access to the target, or the call is rejected.
+
+### Outcome receipts (`receipt`)
+
+Every state-changing response carries a `receipt`: `{action, wrote, did_not,
+statement}`, composed by the server from what the call actually did. When you
+tell the user what happened, say what `receipt.statement` says and nothing
+more. `wrote` is the complete list of what landed; do not add to it. When
+`did_not` is non-empty, relay it in your own words wherever the user would
+otherwise assume it happened: a store that matched a retired claim performed
+no supersession, so say the old claim still stands unless you supersede it. A
+response with no receipt is an error, not a success; report it as a failure.
 
 ## Server next-step hints (`agent_next_steps`)
 

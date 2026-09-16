@@ -60,3 +60,23 @@ except Exception:
 print(data.get(sys.argv[1]) or "")
 ' "$2" 2>/dev/null || true
 }
+
+# Run a command under a wall-clock limit where the host can enforce one.
+# GNU coreutils `timeout` is on every Linux box; stock macOS has neither it
+# nor Homebrew's `gtimeout` unless the user installed coreutils. Falling back
+# to running the command unbounded keeps the hook working there: the CLI
+# calls it wraps are short and have their own network timeouts, and the
+# alternative (every call failing) silently turned off transcript capture and
+# the resume briefing for every Mac user.
+# Usage: sg_with_timeout <seconds> <command> [args...]
+sg_with_timeout() {
+    local secs="$1"
+    shift
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "$secs" "$@"
+    elif command -v gtimeout >/dev/null 2>&1; then
+        gtimeout "$secs" "$@"
+    else
+        "$@"
+    fi
+}
