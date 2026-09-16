@@ -28,7 +28,7 @@ if [[ "${CAPTURE:-off}" == "on" ]]; then
     TRANSCRIPT_PATH="$(sg_json_field "$INPUT_JSON" transcript_path)"
     FLUSH_ARGS=(--client-session-id "$SESSION_ID" --reason "$REASON")
     [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]] && FLUSH_ARGS+=(--path "$TRANSCRIPT_PATH")
-    timeout 15 seaglass session finalize-transcript "${FLUSH_ARGS[@]}" >/dev/null 2>&1 || true
+    sg_with_timeout 15 seaglass session finalize-transcript "${FLUSH_ARGS[@]}" >/dev/null 2>&1 || true
 fi
 
 seaglass session end --client-session-id "$SESSION_ID" >/dev/null 2>&1 || true

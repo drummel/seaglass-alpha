@@ -27,7 +27,7 @@ if ! command -v seaglass >/dev/null 2>&1; then
     exit 0
 fi
 
-timeout 15 seaglass session upload-transcript \
+sg_with_timeout 15 seaglass session upload-transcript \
     --path "$TRANSCRIPT_PATH" \
     --client-session-id "$SESSION_ID" >/dev/null 2>&1 || true
 exit 0

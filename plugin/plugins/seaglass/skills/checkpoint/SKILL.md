@@ -98,6 +98,12 @@ Stored 4 memories and 1 document:
 Skipped 2 items already in Seaglass.
 ```
 
+The summary lists only what each call's `receipt.wrote` says landed. The
+counts come from the receipts, not from what you set out to store: a call
+that returned an error contributed nothing, and a `receipt` whose `did_not`
+is non-empty is relayed in your own words (a deduplicated document was not
+newly saved; a store that matched a retired claim did not supersede it).
+
 Keep it tight — IDs and one-line rationales, no ceremony. If anything
 looked ambiguous (multiple people named Ada, unclear which project), say
 so explicitly and ask the user before writing.

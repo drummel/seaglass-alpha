@@ -13,7 +13,13 @@
 
 set -euo pipefail
 
-readonly REPO="${SEAGLASS_REPO:-drummel/seaglass-alpha}"
+# The default repo is filled in per distribution channel when this installer is
+# published; the unpublished source copy carries the placeholder and refuses to
+# run so it can never install from the wrong channel.
+# Kept apart from the expansion below: bash does not nest braces inside
+# ${var:-default}, so a placeholder default would mangle a user-supplied override.
+readonly DEFAULT_REPO="drummel/seaglass-alpha"
+readonly REPO="${SEAGLASS_REPO:-$DEFAULT_REPO}"
 readonly REQUESTED_VERSION="${SEAGLASS_VERSION:-latest}"
 
 info() { printf '==> %s\n' "$*" >&2; }
@@ -120,6 +126,11 @@ verify_checksum() {
 }
 
 main() {
+	if [[ -z "${SEAGLASS_REPO:-}" ]]; then
+		case "${DEFAULT_REPO}" in
+		*"{{"*) fail "This is the unpublished source copy of the installer; set SEAGLASS_REPO=owner/name or use the published installer for your channel." ;;
+		esac
+	fi
 	require_command uname
 	require_command tar
 	require_command mktemp

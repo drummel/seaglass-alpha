@@ -23,8 +23,8 @@ musl (Alpine).
 # One-line installer (detects OS/arch, verifies checksum, installs to ~/.local/bin):
 curl -fsSL https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh | bash
 
-# Or download a binary from the GitHub Releases page and put it on your PATH.
-# Or, once the tap is live: brew install seaglass-ai/tap/seaglass
+# Or download a binary from the GitHub Releases page and put it on your PATH:
+#   https://github.com/drummel/seaglass-alpha/releases
 ```
 
 Pin a version with `SEAGLASS_VERSION=1.2.3`, or an install dir with

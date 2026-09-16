@@ -52,7 +52,7 @@ fi
 # Default off on any failure. On Claude, also mirror to CLAUDE_ENV_FILE (the
 # original fast path); the state file is the cross-host source of truth.
 if command -v seaglass >/dev/null 2>&1; then
-    CAPTURE="$(timeout 10 seaglass session transcript-config 2>/dev/null || echo off)"
+    CAPTURE="$(sg_with_timeout 10 seaglass session transcript-config 2>/dev/null || echo off)"
     [[ "$CAPTURE" == "on" ]] || CAPTURE="off"
     sg_state_set "$SESSION_ID" capture "$CAPTURE"
     if sg_is_claude_host; then
@@ -60,8 +60,16 @@ if command -v seaglass >/dev/null 2>&1; then
     fi
 fi
 
+# The installer URL is filled in per distribution channel at publish time; an
+# unpublished (source) copy still holds the placeholder, so fall back to prose.
+INSTALL_URL="https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh"
+# The whole "run ..." fragment is built here so the emit below does not have to
+# know whether it got a command (backticked) or prose (not).
+INSTALL_HINT="run \`curl -fsSL ${INSTALL_URL} | bash\`"
+[[ "$INSTALL_URL" == *"{{"* ]] && INSTALL_HINT="run the Seaglass CLI installer for this deployment"
+
 if ! command -v seaglass >/dev/null 2>&1; then
-    emit "The Seaglass plugin is installed but the \`seaglass\` CLI is not on PATH. Tell the user to run \`curl -fsSL https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh | bash\` and restart this session. (On the remote connector, profile and preferences still arrive over MCP; the CLI adds transcript capture and the resume briefing.)"
+    emit "The Seaglass plugin is installed but the \`seaglass\` CLI is not on PATH. Tell the user to ${INSTALL_HINT} and restart this session. (On the remote connector, profile and preferences still arrive over MCP; the CLI adds transcript capture and the resume briefing.)"
     exit 0
 fi
 
@@ -80,7 +88,7 @@ fi
 # conversation starts with continuity. Best-effort and deterministic (no LLM);
 # empty when there's no prior session worth summarizing, in which case we emit
 # the profile alone.
-BRIEFING="$(timeout 10 seaglass session briefing 2>/dev/null || true)"
+BRIEFING="$(sg_with_timeout 10 seaglass session briefing 2>/dev/null || true)"
 if [[ -n "$BRIEFING" ]]; then
     emit "$PROFILE
 
