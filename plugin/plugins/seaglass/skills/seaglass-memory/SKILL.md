@@ -243,16 +243,13 @@ status that moved. Those writes have to replace the old claim rather than sit be
   searches before capturing. When recall *hits*, write to the page it returned instead of
   searching again.
 
-Three things this does *not* mean:
+Two things this does *not* mean:
 
 - **A plainly new fact needs no lookup.** "Priya just joined as our data lead" is new
   information. Write it.
 - **An empty search is an answer, not a blocker.** If you do look and find nothing, that
   settles it: capture the fact as new. Never turn a miss into an interrogation. Don't ask
   the user which Ada they meant just because no page exists yet.
-- **This is a capture rule, not a preamble for everything.** Structural and corrective
-  tools (`move_page`, `reconsolidate_memory`, `edit_section`, `revert_page`) already take
-  an explicit target. Don't front them with a lookup you don't need.
 
 Either way, name the target: pass `primary_page` on every `store_memory`, the resolved slug
 when you have one, the subject's name when you don't.
@@ -585,6 +582,12 @@ mode — no `resolution` argument). The server returns a diagnosis and a
 `suggested_clarification_question`. Ask the user with that question. Once
 they confirm, call `reconsolidate_memory` again with the `resolution`
 object filled in (apply mode).
+
+One thing the recall-first rule does *not* mean:
+
+- **This is a capture rule, not a preamble for everything.** Structural and corrective
+  tools (`move_page`, `reconsolidate_memory`, `edit_section`, `revert_page`) already take
+  an explicit target. Don't front them with a lookup you don't need.
 
 ## What you MUST NEVER pass
 
