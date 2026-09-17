@@ -152,6 +152,13 @@ coherently regardless of which writer wrote which page:
 7. **No em dashes.** Use a comma, colon, or period instead. The
    long dash character never belongs in a page body, one-line
    summary, or edit summary you author.
+8. **Keep the source's own words for when something happened.** If
+   the user said "last week" or "end of Q3", write that, never an
+   anchored calendar date you worked out from it. A body sentence
+   reads as a recorded claim, so a day nobody stated is a fact you
+   invented. Where the date of the record matters, attribute it to
+   the record beside the claim ("recorded 2026-07-23"), not inside
+   the sentence as part of what was asserted.
 
 ## When to author a page directly
 
