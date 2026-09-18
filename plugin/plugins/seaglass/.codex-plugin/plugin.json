@@ -6,7 +6,7 @@
   "homepage": "https://github.com/drummel/seaglass-alpha",
   "skills": "./skills/",
   "hooks": "./hooks/hooks.json",
-  "mcp": "./.codex-plugin/mcp.json",
+  "mcpServers": "./.codex-plugin/mcp.json",
   "interface": {
     "displayName": "Seaglass",
     "shortDescription": "Persistent memory across your AI tools",
