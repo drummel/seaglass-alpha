@@ -158,7 +158,7 @@ The `seaglass` plugin bundles the **remote memory connector** as an OAuth MCP se
 2. **Trust the hooks.** Installing a plugin does not trust its executable hooks. Open `/hooks`, review the Seaglass session hooks, and trust them, otherwise they stay skipped.
 3. **Authenticate the connector** the first time a memory tool is used: run `codex mcp login seaglass` (or click Authenticate) and approve in the browser. The token is managed by Codex; no token lives in any config file.
 
-The connector points at the hosted Seaglass endpoint (`<server>/mcp`). Hooks fire on Codex's `SessionStart`, `Stop`, and `PreCompact`; Codex has no `SessionEnd`, so an abandoned session is finalized by the server-side TTL sweep rather than at session close.
+The connector points at the hosted Seaglass endpoint (`<server>/mcp`). Hooks fire on Codex's `SessionStart`, `SessionEnd`, `Stop`, and `PreCompact` — both manifests point at the same `hooks/hooks.json`, which declares all four. A session that dies without its `SessionEnd` hook running is finalized by the server-side TTL sweep as a backstop.
 
 ### CLI plugin (alternative) — token-cheap, shell-capable clients
 
