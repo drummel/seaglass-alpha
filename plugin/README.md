@@ -8,10 +8,10 @@ The plugins in this marketplace are the **optional power-up** on top of that: th
 
 | Plugin | Transport | Best for |
 |---|---|---|
-| `seaglass` | Local `seaglass bridge` stdio adapter → API | Skill + hooks for MCP-capable clients that need a local stdio server. |
+| `seaglass` | None — pairs with the remote connector | Skills + session lifecycle hooks. Ships no MCP server: add the connector for tools, this plugin for automatic recall, transcripts, and `/seaglass:status`. |
 | `seaglass-cli` | `seaglass` CLI over `bash` | Token-cheap alternative for shell-capable clients (Claude Code). Same backend, lower per-turn cost. |
 
-Both plugins use the `seaglass` CLI on PATH as their auth boundary; the remote connector needs neither.
+`seaglass-cli` uses the `seaglass` CLI on PATH as its auth boundary. `seaglass` needs neither the CLI nor a local process — it carries no MCP server, so the connector you already added is what authorizes its tools. On Codex, where the plugin manifest format supports a remote server, the plugin does ship the connector directly.
 
 A third, **experimental** plugin (`plugin/plugins/seaglass-hermes/`) targets the [Hermes](https://github.com/nousresearch/hermes-agent) agent. It is intentionally **not** published to the marketplace — its hook contract is unverified — so `marketplace.json` lists only the two plugins above. See its README before relying on it.
 
@@ -158,7 +158,7 @@ The `seaglass` plugin bundles the **remote memory connector** as an OAuth MCP se
 2. **Trust the hooks.** Installing a plugin does not trust its executable hooks. Open `/hooks`, review the Seaglass session hooks, and trust them, otherwise they stay skipped.
 3. **Authenticate the connector** the first time a memory tool is used: run `codex mcp login seaglass` (or click Authenticate) and approve in the browser. The token is managed by Codex; no token lives in any config file.
 
-The connector points at the hosted Seaglass endpoint (`<server>/mcp`). Hooks fire on Codex's `SessionStart`, `Stop`, and `PreCompact`; Codex has no `SessionEnd`, so an abandoned session is finalized by the server-side TTL sweep rather than at session close.
+The connector points at the hosted Seaglass endpoint (`<server>/mcp`). Hooks fire on Codex's `SessionStart`, `SessionEnd`, `Stop`, and `PreCompact` — both manifests point at the same `hooks/hooks.json`, which declares all four. A session that dies without its `SessionEnd` hook running is finalized by the server-side TTL sweep as a backstop.
 
 ### CLI plugin (alternative) — token-cheap, shell-capable clients
 

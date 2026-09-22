@@ -12,7 +12,7 @@
     {
       "name": "seaglass",
       "source": "./plugin/plugins/seaglass",
-      "description": "Capture skill + session hooks for the Seaglass memory layer. Pairs with the remote Seaglass connector; includes a local stdio bridge for clients that need one."
+      "description": "Capture skill + session hooks for the Seaglass memory layer. Ships the remote Seaglass connector, so installing it connects you: browser sign-in, no CLI required. Adds automatic recall, transcripts, and a connection-status command."
     },
     {
       "name": "seaglass-cli",

@@ -43,11 +43,16 @@ Run at most once per session if you suspect auth is shaky. Don't poll.
 
 ## At the start of a session — `seaglass me`
 
-Run this **before any other Seaglass work** in a conversation:
+Once per conversation, to orient yourself:
 
 ```bash
 seaglass me --json
 ```
+
+**It is not a gate in front of a read.** If the user's first message already
+asks about a person, project, topic, or past conversation, go straight to
+`seaglass search` and answer them; orientation can wait, or ride along after.
+A question is the cue to search, and running `me` first only delays the answer.
 
 Returns the user's profile (preferences, working style) plus their canonical
 self page wiki page. Use what comes back to tune your own behaviour for
@@ -62,7 +67,9 @@ want a fresh fetch mid-session.
 
 ## When to read
 
-Any time the user references a person, project, topic, or past conversation:
+When the user asks about or refers back to a person, project, topic, or past
+conversation, search Seaglass before answering from what you already know. This
+is the command for it, and it comes before `seaglass me`, not after:
 
 ```bash
 seaglass search "<query>" --json
@@ -152,6 +159,13 @@ coherently regardless of which writer wrote which page:
 7. **No em dashes.** Use a comma, colon, or period instead. The
    long dash character never belongs in a page body, one-line
    summary, or edit summary you author.
+8. **Keep the source's own words for when something happened.** If
+   the user said "last week" or "end of Q3", write that, never an
+   anchored calendar date you worked out from it. A body sentence
+   reads as a recorded claim, so a day nobody stated is a fact you
+   invented. Where the date of the record matters, attribute it to
+   the record beside the claim ("recorded 2026-07-23"), not inside
+   the sentence as part of what was asserted.
 
 ## When to author a page directly
 
