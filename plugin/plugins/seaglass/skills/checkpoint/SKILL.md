@@ -42,7 +42,7 @@ Do **not** capture:
 ## How to write each one
 
 Use the existing `seaglass-memory` skill's tool calls (`store_memory`,
-`store_document`). Two requirements specific to checkpoint mode:
+`store_document`). Three requirements specific to checkpoint mode:
 
 1. **Density.** 200–2000 chars per memory, with the surrounding scaffolding —
    when, who else was involved, the rationale, what makes it notable. Five
@@ -58,9 +58,20 @@ Use the existing `seaglass-memory` skill's tool calls (`store_memory`,
      "content": "Ada Example confirmed as PM of Project Example at the April 15 kickoff. Previously CTO at Example Corp; the user noted this came up alongside her budget pushback the week before.",
      "primary_page": "people/ada-example",
      "links": {"projects": ["projects/project-example"], "topics": ["Q3 launch"]},
+     "source_origin": {"kind": "conversation"},
      "capture_context": "End-of-session checkpoint after a 30-minute review of the Project Example staffing plan; user wanted Ada's role and the Example Corp background preserved together."
    }
    ```
+
+3. **The conversation's own words for when something happened.** A checkpoint
+   is written after the fact, so keep the phrasing the conversation used
+   rather than resolving it: "last week" stays "last week", "the week before
+   the kickoff" stays that, never an anchored calendar date you worked out
+   from it. Set `event_time` only from an explicit date or a relative phrase
+   naming a specific day against today ("yesterday", "last Tuesday"); a vague
+   phrase names no day and sets nothing, and the store time stands in. Where
+   the date of the record matters, put it beside the claim ("recorded
+   2026-07-23") rather than inside the sentence as part of what was asserted.
 
 ## Avoid double-stores
 
@@ -76,7 +87,9 @@ write — or, if it merely adds context, use `store_memory` with
 Respect anything the user said about privacy:
 
 - Inline `<private>...</private>` blocks pass through verbatim — server
-  forces `sensitivity: private`.
+  forces `sensitivity: private`. The tags mark the **user's** words: keep them
+  around the span the user marked, and never wrap a summary, a
+  characterization, or a judgment of your own in them.
 - "Off the record", "between us", "don't remember this" → set
   `sensitivity: private` on the write.
 - Compensation, health, personal-life details → `sensitivity: sensitive`.

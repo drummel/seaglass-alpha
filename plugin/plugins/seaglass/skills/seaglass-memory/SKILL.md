@@ -1,6 +1,6 @@
 ---
 name: seaglass-memory
-description: Persist observations about people, projects, topics, and preferences to the Seaglass memory layer so they persist across clients.
+description: Read and write the user's persistent memory, carried across every AI tool they use. Use when the user references a person, project, topic, or past decision ("what do we know about X", "remind me where that landed"), states a durable fact, decision, preference, or correction worth keeping, asks you to remember or save something, or corrects something already stored.
 ---
 
 # Seaglass memory skill
@@ -9,83 +9,15 @@ You are connected to Seaglass, a persistent memory layer that syncs across the
 user's AI tools. Read what Seaglass already knows before assuming; write new
 facts when you learn them.
 
-## If the Seaglass MCP tools aren't available (or a call comes back unauthenticated)
+If this client has a memory of its own, Seaglass sits alongside it, not above
+it. Durable facts about people, projects, and decisions go to Seaglass so they
+reach the user's other tools; this client's own memory is for how to work with
+this user here. Use both.
 
-You're reading this skill because the `seaglass-memory` plugin is installed,
-but if the actual MCP tools (`search`, `store_memory`, `store_document`,
-`update_memory`, `reconsolidate_memory`) aren't loaded — or a tool call returns
-an unauthenticated / not-connected error — the MCP server hasn't connected.
-The cause is almost always auth, and the fix is one command: `seaglass auth
-login`.
-
-**Offer to run it for the user — don't just describe it.** In a client where
-you can run shell commands (Claude Code), say what you're about to do and ask
-once, then run it on yes. For example:
-
-> Seaglass isn't connected yet. I can run `seaglass auth login` for you — it'll
-> open your browser to approve the connection. Want me to?
-
-On yes, run `seaglass auth login`. It opens the Seaglass web app, the user
-clicks **Approve**, and a bearer token is cached at `~/.config/seaglass/token`;
-the `seaglass bridge` stdio transport the plugin invokes picks it up
-automatically.
-
-Handling notes:
-
-- **Name the exact command in your reply.** Say `seaglass auth login`
-  verbatim (as above), not "the login command" — the user may act on your
-  message later, from a terminal you can't see.
-- **A connection problem is not product feedback.** Do not call
-  `send_seaglass_product_feedback` (or any other Seaglass tool) about the
-  tools being unavailable; reply in text with the offer and the command.
-- **Offer first, then run on yes.** `auth login` opens a browser and blocks
-  until the user approves — it's a deliberate, outward-facing step, so confirm
-  before running it rather than firing it unprompted.
-- **Non-default deployment:** have the user `export SEAGLASS_URL=https://...`
-  before `auth login` (set it in the same command/shell), then run the login.
-- **After approval**, the client (Claude Code / Desktop / Cowork) needs to
-  restart the session for the MCP server to reconnect and the tools to load.
-- **No shell available?** In a client where you can't run commands (Desktop /
-  Cowork), you can't run it yourself — tell the user to run `seaglass auth
-  login` in a terminal, or point them at the Connect page in the Seaglass web
-  app to authorize from the browser.
-
-`seaglass auth login` also covers the `seaglass` CLI plugin variant — same
-cached token, same auth boundary.
-
-If MCP tools _are_ available, ignore this section.
-
-## A permission denial is the host, not Seaglass
-
-"Denied by user", "The user doesn't want to proceed with this tool use", or
-"[Request interrupted by user for tool use]" is the host's permission layer:
-the call never reached Seaglass. Tell the user, ask them to approve (or allow
-the Seaglass tools, e.g. `/permissions` in Claude Code), then retry the
-identical call. Don't change arguments, switch modes, abandon the task, or
-file product feedback over it. A real Seaglass failure is a structured error
-with a `code` and `message` (plus `agent_next_steps` on `error.data`) or an
-HTTP transport failure.
-
-## At session start
-
-Read `seaglass://profile`. It returns markdown with four sections:
-
-1. **About you** — the synthesized identity Seaglass has built about the user,
-   plus an overlay describing how *this* integration has seen them.
-2. **How to behave** — four hand-crafted instruction sentences (Reading,
-   Writing, Asking, Voicing) derived from the user's effective preferences.
-   Follow them literally; they replace any general behavior assumption.
-3. **Custom instructions** — the user's free-form notes (limits, defaults,
-   tone). User-level first, with integration-specific additions appended.
-4. **Adjusting how I behave** — links the user can visit (and CLI commands
-   they can run) to change preferences. Share these verbatim when asked.
-
-In Claude Code, the `SessionStart` hook
-injects the profile markdown as `additionalContext` before your first turn,
-so you'll already see it — don't re-fetch unless you need a refresh mid-session.
-In clients that don't run plugin hooks (Cowork, some IDE extensions), the user
-can invoke `/recall` to prime the conversation manually. See the
-**Explicit checkpoint and recall** section below.
+The two sections that follow are when to read and when to write, because that
+is the decision you make most often. If the Seaglass tools are missing, a call
+comes back unauthenticated, or the host denies a call, skip to the two recovery
+sections below them.
 
 ## When to read (`search`)
 
@@ -100,15 +32,16 @@ Approach:
 
 1. Call `search` with the free-text query.
 2. If `suggested_action` is `use_top_candidate`, use the returned content.
-3. If `suggested_action` is `clarify_with_user`, render the
-   `suggested_clarification_question` to the user, wait, then re-call. **Prefer
-   the `id` from the returned candidates** when you re-call — it's exact and
-   skips a second name resolution; fall back to the disambiguated name only if
-   you have no id.
-4. If `suggested_action` is `proceed_with_low_confidence`, introduce what
-   Seaglass returned as tentative — "I vaguely recall you working with Ada
-   on reverse ETL; does that sound right?"
-5. If `suggested_action` is `no_match`, don't pretend. Ask the user.
+3. If `suggested_action` is `clarify_with_user` with a
+   `suggested_clarification_question` (mode `resolution_required`: the name
+   matched more than one page), render the question to the user, wait, then
+   re-call. **Prefer the `id` from the returned candidates** when you re-call —
+   it's exact and skips a second name resolution; fall back to the
+   disambiguated name only if you have no id. Without a question (mode
+   `index`: several free-text hits), the results are ranked candidates: use
+   the ones that answer the user, and ask only if you can't tell which they
+   mean.
+4. If `suggested_action` is `no_match`, don't pretend. Ask the user.
 
 **You start already oriented.** The profile you load at session start ends with a
 **Your memory at a glance** map: every library you can reach (with read/write and
@@ -221,7 +154,9 @@ sitting right in front of you:
   — when the instruction says to ask first, do NOT write a memory about a
   third party until the user approves. Ask, wait for the yes, then write.
 
-Within whatever the `Writing` instruction allows, trigger on:
+Within whatever the `Writing` instruction allows, capture in the same turn the
+user says it. Nothing files it later: no background pass sweeps the conversation,
+so a fact left uncaptured is gone when it ends. Trigger on:
 
 - Clear factual statements about a person, project, or topic.
 - Decisions the user makes.
@@ -243,16 +178,13 @@ status that moved. Those writes have to replace the old claim rather than sit be
   searches before capturing. When recall *hits*, write to the page it returned instead of
   searching again.
 
-Three things this does *not* mean:
+Two things this does *not* mean:
 
 - **A plainly new fact needs no lookup.** "Priya just joined as our data lead" is new
   information. Write it.
 - **An empty search is an answer, not a blocker.** If you do look and find nothing, that
   settles it: capture the fact as new. Never turn a miss into an interrogation. Don't ask
   the user which Ada they meant just because no page exists yet.
-- **This is a capture rule, not a preamble for everything.** Structural and corrective
-  tools (`move_page`, `reconsolidate_memory`, `edit_section`, `revert_page`) already take
-  an explicit target. Don't front them with a lookup you don't need.
 
 Either way, name the target: pass `primary_page` on every `store_memory`, the resolved slug
 when you have one, the subject's name when you don't.
@@ -281,12 +213,113 @@ factual statement about a third party is a cue to *ask*, not to write,
 that clarity is exactly what the gate is for, not an exception to it. Name
 what you'd record, wait for an explicit yes, then call `store_memory`.
 
-**`event_time` is for a date you can ground, not a guess.** Set it only from
-an explicit date in the conversation, or by resolving a relative phrase ("last
-week") against the current date you were given at session start. If you have
-neither, omit `event_time`, the store time stands in. Never fabricate a precise
-timestamp from a vague phrase; a wrong `event_time` misdates the memory forever.
+**A date you can ground, not a guess, in `event_time` and in `content` alike.**
+On the `event_time` argument: an explicit date, or a relative phrase naming a
+specific day against today ("yesterday", "last Tuesday"), sets it. A vague
+phrase ("last week", "recently", "end of Q3") names no day and sets nothing,
+and a standing fact reported with no time at all sets nothing either. Omit it
+in both cases, the store time stands in. Most captures have no `event_time`,
+and that is the normal outcome: a wrong one misdates the memory forever.
 
+The same rule governs the prose you write in `content`: house-voice rule 8
+below is not page-only. Keep the user's own words for when something happened,
+so "last week" stays "last week" and "the week before the kickoff" stays that,
+never an anchored calendar date you worked out from it. Memory content reads
+back as a recorded claim exactly the way a page sentence does. Where the date
+of the record matters, attribute it to the record beside the claim ("recorded
+2026-07-23") rather than inside the sentence as part of what was asserted.
+
+
+## At session start
+
+Read `seaglass://profile`. It returns markdown with four sections:
+
+1. **About you** — the synthesized identity Seaglass has built about the user,
+   plus an overlay describing how *this* integration has seen them.
+2. **How to behave** — four hand-crafted instruction sentences (Reading,
+   Writing, Asking, Voicing) derived from the user's effective preferences.
+   Follow them literally; they replace any general behavior assumption.
+3. **Custom instructions** — the user's free-form notes (limits, defaults,
+   tone). User-level first, with integration-specific additions appended.
+4. **Adjusting how I behave** — links the user can visit (and CLI commands
+   they can run) to change preferences. Share these verbatim when asked.
+
+In Claude Code, the `SessionStart` hook
+injects the profile markdown as `additionalContext` before your first turn,
+so you'll already see it — don't re-fetch unless you need a refresh mid-session.
+In clients that don't run plugin hooks (Cowork, some IDE extensions), the user
+can invoke `/recall` to prime the conversation manually. See the
+**Explicit checkpoint and recall** section below.
+
+## If the Seaglass MCP tools aren't available (or a call comes back unauthenticated)
+
+You're reading this skill because the `seaglass` plugin is installed, but if
+the actual MCP tools (`search`, `store_memory`, `store_document`,
+`update_memory`, `reconsolidate_memory`) aren't loaded, or a tool call returns
+an unauthenticated / not-connected error, the remote connector the plugin
+registers has not been authorized in this client yet (or its grant expired).
+The fix is the client's own connector sign-in, not a Seaglass command:
+
+- **Claude Code:** run `/mcp`, pick `seaglass`, choose **Authenticate**, and
+  approve in the browser. The tools load on the next turn.
+- **Claude Desktop, claude.ai, Cowork:** open Customize, then Connectors, find
+  Seaglass and reconnect it; approve in the browser.
+- **Codex:** run `codex mcp login seaglass` (or click Authenticate).
+
+Handling notes:
+
+- **Name the exact step in your reply.** Say `/mcp` then **Authenticate** (or
+  the Connectors page) verbatim, not "reconnect Seaglass": the user may act on
+  your message later, from a window you can't see.
+- **A connection problem is not product feedback.** Do not call
+  `send_seaglass_product_feedback` (or any other Seaglass tool) about the
+  tools being unavailable; reply in text with the step.
+- **Non-default deployment:** the connector URL is fixed by the plugin; a
+  different Seaglass deployment is a different connector, added from that
+  deployment's Connect page.
+- **You have a shell but no MCP tools?** The `seaglass` CLI drives the same
+  backend with its own credential; see the CLI section below. Offer to run
+  `seaglass auth login` for the user (it opens a browser and blocks until they
+  approve, so ask once, then run it on yes) rather than only describing it.
+
+If MCP tools _are_ available, ignore this section.
+
+## A permission denial is the host, not Seaglass
+
+"Denied by user", "The user doesn't want to proceed with this tool use", or
+"[Request interrupted by user for tool use]" is the host's permission layer:
+the call never reached Seaglass. Tell the user, ask them to approve (or allow
+the Seaglass tools, e.g. `/permissions` in Claude Code), then retry the
+identical call. Don't change arguments, switch modes, abandon the task, or
+file product feedback over it. A real Seaglass failure is a structured error
+with a `code` and `message` (plus `agent_next_steps` on `error.data`) or an
+HTTP transport failure.
+
+## The `seaglass` CLI: the same operations over a shell
+
+The plugin's hooks already use the `seaglass` CLI (it injects your profile at
+session start and closes the session at the end), and the same binary drives
+every operation in this skill from a shell: `seaglass search`, `seaglass
+memory store`, `seaglass document store`, `seaglass memory update`,
+`seaglass reconsolidate`, and `seaglass page ...`. The MCP tools are the
+default path. Reach for the CLI when:
+
+- you have a shell and the MCP tools are not loaded, or the host has no MCP;
+- a scripted loop over many items is cheaper than one tool call each;
+- a document is large enough to want `--via-upload`.
+
+Every rule in this skill applies unchanged; only the spelling changes
+(`links` becomes `--link-projects`, `supersedes` becomes `--supersedes`,
+`include_private` becomes `--include-private`). Read `reference/cli.md` for
+the command surface, the JSON shapes and the exit codes before running
+anything, and never pass `--user-id`, `--agent-id` or `--session-id`: those
+flags do not exist, exactly as the fields never exist on a tool call.
+
+Its credential is separate from the connector's grant: `seaglass auth login`
+caches a token at `~/.config/seaglass/token` after a browser approval, and
+when the MCP tools are loaded but the CLI has no token (a cloud container),
+the `cli_handoff` tool mints a code to redeem with `seaglass auth redeem`
+instead.
 
 ## House voice (when authoring pages)
 
@@ -319,6 +352,13 @@ wiki reads coherently regardless of which writer wrote which page:
 7. **No em dashes.** Use a comma, colon, or period instead. The long
    dash character never belongs in a page body, one-line summary, or
    edit summary you author.
+8. **Keep the source's own words for when something happened.** If the
+   user said "last week" or "end of Q3", write that, never an anchored
+   calendar date you worked out from it. A body sentence reads as a
+   recorded claim, so a day nobody stated is a fact you invented. Where
+   the date of the record matters, attribute it to the record beside the
+   claim ("recorded 2026-07-23"), not inside the sentence as part of
+   what was asserted.
 
 ## When to author a page directly
 
@@ -529,6 +569,15 @@ When the user wraps content in `<private>...</private>`, pass it through
 as-is in the `content` field. Seaglass will honor the tag and store at
 `sensitivity: private` regardless of the `sensitivity` parameter you pass.
 
+**The tags go around the user's words, not yours.** They mark the span the
+user marked, so keep them where the user put them and leave the wording inside
+them alone. Never move the tags onto an observation, a characterization, or a
+judgment of your own: a private tag around your own sentence files your reading
+of the note as though the user had written it, and about a third party that is
+the whole harm. If you would rather not carry the tags, pass
+`sensitivity: private` for the whole memory and leave the user's span untagged
+but word-for-word intact.
+
 When the user says phrases like:
 
 - "don't remember this", "off the record", "between us", "keep this private"
@@ -586,17 +635,23 @@ mode — no `resolution` argument). The server returns a diagnosis and a
 they confirm, call `reconsolidate_memory` again with the `resolution`
 object filled in (apply mode).
 
+One thing the recall-first rule does *not* mean:
+
+- **This is a capture rule, not a preamble for everything.** Structural and corrective
+  tools (`move_page`, `reconsolidate_memory`, `edit_section`, `revert_page`) already take
+  an explicit target. Don't front them with a lookup you don't need.
+
 ## What you MUST NEVER pass
 
 Never include `user_id`, `agent_id`, `session_id`, `seaglass_session_id`,
 `client_session_id`, or any identity-bearing fields in tool inputs. The
 Seaglass server fills these from authenticated session context.
 
-## Low-confidence reads
+## Thin reads
 
-If `search` returns a result with `suggested_action: proceed_with_low_confidence`,
+When what `search` returns is thin (a passing mention, a role marked unclear),
 frame the reply with epistemic humility: "I vaguely recall..." rather than
-stating as fact.
+stating it as fact.
 
 ## Adjusting how you behave
 
