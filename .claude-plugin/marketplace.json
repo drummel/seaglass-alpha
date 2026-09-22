@@ -6,18 +6,13 @@
   },
   "metadata": {
     "description": "Seaglass personal memory layer — keeps your AI tools in sync across Claude Code, Claude Desktop, Cowork, and OpenClaw.",
-    "version": "0.4.1"
+    "version": "0.5.0"
   },
   "plugins": [
     {
       "name": "seaglass",
       "source": "./plugin/plugins/seaglass",
-      "description": "Capture skill + session hooks for the Seaglass memory layer. Pairs with the remote Seaglass connector; includes a local stdio bridge for clients that need one."
-    },
-    {
-      "name": "seaglass-cli",
-      "source": "./plugin/plugins/seaglass-cli",
-      "description": "Skill that drives Seaglass through the `seaglass` CLI instead of MCP. Lower per-turn token cost for shell-capable clients."
+      "description": "The Seaglass memory layer in one install: the remote memory connector (browser sign-in, no CLI required), the capture skill, session lifecycle hooks, a connection-status command, and the token-cheap `seaglass` CLI path for shell-capable clients."
     }
   ]
 }

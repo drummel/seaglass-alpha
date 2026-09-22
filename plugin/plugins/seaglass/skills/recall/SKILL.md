@@ -42,11 +42,13 @@ Cross-links: Ada Example, Q3 launch, Example Corp migration.
 Q3 budget allocation, missed the April 8 sync. Async-review preference.
 ```
 
-If a result is `proceed_with_low_confidence`, use epistemic humility —
-"I vaguely recall…" rather than stating as fact.
+If what comes back is thin (a passing mention, a role marked unclear), use
+epistemic humility — "I vaguely recall…" rather than stating as fact.
 
-If a result is `clarify_with_user`, render the
-`suggested_clarification_question` and stop. Don't guess.
+If a result is `clarify_with_user` with a `suggested_clarification_question`
+(the name matched more than one page), render the question and stop. Don't
+guess. Several free-text hits come back as `clarify_with_user` with no
+question; summarize the ones that bear on the conversation.
 
 ## Sensitivity
 
