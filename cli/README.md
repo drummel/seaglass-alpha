@@ -9,9 +9,10 @@ This exists for two reasons:
 
 1. **Developer velocity.** Capture, replay, and audit memories without spinning
    up an MCP client.
-2. **Token-cheap agent integration.** Pair with the
-   [`seaglass-cli`](../plugin/plugins/seaglass-cli) plugin to teach Claude Code
-   (or any shell-capable agent) to drive Seaglass over `bash` instead of MCP.
+2. **Token-cheap agent integration.** The [`seaglass`](../plugin/plugins/seaglass)
+   plugin's skill carries a CLI reference that teaches Claude Code (or any
+   shell-capable agent) to drive Seaglass over `bash` instead of MCP, and its
+   session hooks shell out to this binary.
 
 The CLI is a single static binary (CGO disabled), so it has no runtime
 dependency, a sub-10ms cold start, and one Linux build runs on both glibc and

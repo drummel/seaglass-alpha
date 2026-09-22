@@ -5,8 +5,9 @@
 #
 # Persists per-session state under the plugin data dir, pins CLI/stdio write
 # attribution on Claude, and emits the user's profile + resume briefing as
-# model-visible SessionStart context. Degrades to a one-line nudge if seaglass
-# is missing, unauthed, or returns nothing, and never blocks the session.
+# model-visible SessionStart context. When the CLI is missing or unauthed it
+# degrades to instructing the agent to load the same context over MCP (it is an
+# authenticated MCP client; this hook is not), and never blocks the session.
 set -uo pipefail
 . "${BASH_SOURCE[0]%/*}/lib/runtime.sh"
 
@@ -68,13 +69,31 @@ INSTALL_URL="https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/i
 INSTALL_HINT="run \`curl -fsSL ${INSTALL_URL} | bash\`"
 [[ "$INSTALL_URL" == *"{{"* ]] && INSTALL_HINT="run the Seaglass CLI installer for this deployment"
 
+# No CLI: do not dead-end on an install nudge. This hook cannot speak MCP
+# itself (a shell process has no connection and no access to the host's OAuth
+# token), but the agent reading this text is an authenticated MCP client, so
+# hand it the read. Covers the hedge in mcp/guidance.py, whose fallback order
+# assumes "most MCP hosts auto-load resources at init" -- where that does not
+# hold, this makes the read explicit. The CLI stays the power-up for the two
+# things MCP cannot do here: transcript capture and session close.
 if ! command -v seaglass >/dev/null 2>&1; then
-    emit "The Seaglass plugin is installed but the \`seaglass\` CLI is not on PATH. Tell the user to ${INSTALL_HINT} and restart this session. (On the remote connector, profile and preferences still arrive over MCP; the CLI adds transcript capture and the resume briefing.)"
+    emit "Load the user's Seaglass context now, before your first reply: read the \`seaglass://profile\` resource, and call \`get_started\` for account, library, and anything outstanding. Follow the behavioral rules the profile carries.
+
+If those tools are not available, Seaglass is not connected to this client -- tell the user to add the connector and approve it in the browser.
+
+The \`seaglass\` CLI is not on PATH. Memory reads and writes work without it over the connector; it adds transcript capture and the resume briefing. Mention it only if the user asks, or wants those: ${INSTALL_HINT}."
     exit 0
 fi
 
+# CLI present but unauthed. The connector is a separate credential and may well
+# be working, so take the same MCP path rather than blocking on a CLI login the
+# user may not need.
 if ! seaglass auth status >/dev/null 2>&1; then
-    emit "Seaglass is not authenticated. Tell the user to run \`seaglass auth login\` once in a terminal, approve in the browser, then restart this session. The token caches at ~/.config/seaglass/token."
+    emit "Load the user's Seaglass context now, before your first reply: read the \`seaglass://profile\` resource, and call \`get_started\` for account, library, and anything outstanding.
+
+If those tools are not available, Seaglass is not connected to this client -- tell the user to add the connector and approve it in the browser.
+
+The \`seaglass\` CLI is installed but not authenticated, so transcript capture and the resume briefing are off. To enable them the user runs \`seaglass auth login\` once in a terminal and restarts this session; the token caches at ~/.config/seaglass/token. Mention it only if they ask, or want those."
     exit 0
 fi
 
