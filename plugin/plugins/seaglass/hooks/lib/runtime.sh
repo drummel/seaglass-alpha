@@ -2,9 +2,14 @@
 # Host-neutral runtime helpers shared by the Seaglass session hooks
 # (session-start.sh / transcript-flush.sh / session-end.sh). Sourced, not run.
 #
-# Works under both Claude Code (CLAUDE_PLUGIN_ROOT / CLAUDE_ENV_FILE) and
-# ChatGPT/Codex (PLUGIN_ROOT / PLUGIN_DATA, with CLAUDE_* aliases set for
-# compatibility).
+# Works under Claude Code (CLAUDE_PLUGIN_ROOT / CLAUDE_ENV_FILE), ChatGPT/Codex
+# (PLUGIN_ROOT / PLUGIN_DATA, with CLAUDE_* aliases set for compatibility), and
+# Cursor, which names itself with a `cursor` argument in its hooks file because
+# it documents no variable a script could tell it apart by.
+
+# The host a script was started by, from its first argument ("cursor"), set by
+# each hook before it sources this file.
+SG_HOOK_HOST="${SG_HOOK_HOST:-}"
 
 # The plugin's writable data dir, kept across sessions (PLUGIN_DATA on Codex,
 # CLAUDE_PLUGIN_DATA as its alias); fall back to a stable config path so the
@@ -58,11 +63,26 @@ sg_state_clear() {
     rm -f "$dir/$session_id".* 2>/dev/null || true
 }
 
+# True on the Cursor host.
+sg_is_cursor_host() {
+    [[ "$SG_HOOK_HOST" == "cursor" ]]
+}
+
 # True on the Claude host. Claude Code uniquely exposes CLAUDE_ENV_FILE (a
 # writable env file); Codex sets the CLAUDE_PLUGIN_ROOT/DATA aliases but not
 # CLAUDE_ENV_FILE, so this reliably discriminates the host.
 sg_is_claude_host() {
     [[ -n "${CLAUDE_ENV_FILE:-}" ]]
+}
+
+# The chat's id from a hook's stdin JSON: `session_id`, or on Cursor the
+# `conversation_id` it also sends, whichever is present.
+# Usage: sg_session_id "$INPUT_JSON"
+sg_session_id() {
+    local id
+    id="$(sg_json_field "$1" session_id)"
+    [[ -n "$id" ]] || id="$(sg_json_field "$1" conversation_id)"
+    printf '%s' "$id"
 }
 
 # Parse a string field from a hook's stdin JSON.

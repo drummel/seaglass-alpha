@@ -142,6 +142,30 @@ Hooks fire on Codex's `SessionStart`, `SessionEnd`, `Stop`, and `PreCompact` —
 
 If the connector is unauthenticated, the skill tells the agent which sign-in to name. If the CLI is missing or unauthenticated, the session hooks degrade to a one-line nudge and never block the session, on every host.
 
+## Install in Cursor
+
+The same plugin installs in Cursor (2.5 or later). Cursor reads `.cursor-plugin/plugin.json`, which points at the same `skills/`, the same connector (`.mcp.json`), an always-on rule (`rules/seaglass.mdc`) that opens every chat with `start_session`, and a Cursor-format hooks file (`hooks/cursor-hooks.json`) that runs the same session scripts.
+
+Until Seaglass is listed in Cursor's own marketplace, install it one of two ways:
+
+- **As a team marketplace** (Cursor Teams and Enterprise). A Cursor admin opens the dashboard, Settings, Plugins, and under Team Marketplaces chooses **Import**, pastes `https://github.com/drummel/seaglass-alpha`, and turns on the `seaglass` plugin. Members then install it from Customize, or with `/add-plugin seaglass` in the chat box.
+- **Locally**, on one machine:
+
+  ```bash
+  git clone --depth 1 https://github.com/drummel/seaglass-alpha /tmp/seaglass-plugin
+  mkdir -p ~/.cursor/plugins/local
+  rm -rf ~/.cursor/plugins/local/seaglass
+  cp -R /tmp/seaglass-plugin/plugin/plugins/seaglass ~/.cursor/plugins/local/seaglass
+  ```
+
+  Then run **Developer: Reload Window**.
+
+Then connect: open Cursor Settings, Tools & MCP, and click **Connect** next to `seaglass`. Approve Seaglass in the browser, then start a new chat, because the chat you have open cannot see the tools yet.
+
+The plugin registers its own `seaglass` server. If you already added Seaglass with the web app's **Add to Cursor** button, remove one of the two entries in Tools & MCP, or the agent sees every tool twice.
+
+Cursor runs `sessionStart` and `sessionEnd` through `bash`, so the hooks need a `bash` on `PATH` (Windows without one skips them; the rule and the connector still work). Transcript capture and the resume briefing are not wired up for Cursor yet.
+
 ## Verifying the connection
 
 Once installed, ask Claude:

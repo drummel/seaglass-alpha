@@ -11,7 +11,7 @@ set -uo pipefail
 . "${BASH_SOURCE[0]%/*}/lib/runtime.sh"
 
 INPUT_JSON="$(cat 2>/dev/null || true)"
-SESSION_ID="$(sg_json_field "$INPUT_JSON" session_id)"
+SESSION_ID="$(sg_session_id "$INPUT_JSON")"
 TRANSCRIPT_PATH="$(sg_json_field "$INPUT_JSON" transcript_path)"
 
 CAPTURE="${SEAGLASS_TRANSCRIPT_CAPTURE:-}"
