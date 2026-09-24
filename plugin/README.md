@@ -130,9 +130,9 @@ Restart Claude Desktop to pick up the change. To uninstall, remove the `seaglass
 
 The same plugin installs on ChatGPT/Codex from its plugin surface. One repo ships both manifests: Codex reads `.codex-plugin/plugin.json`, Claude reads `.claude-plugin/plugin.json`, and both share the `skills/` and `hooks/` directories. Both manifests declare the same remote connector (`.codex-plugin/mcp.json` and `.mcp.json` are kept equal by a test).
 
-> The exact Codex install command, manifest keys, and hook-config validation are docs-grade and should be confirmed against the live [Codex plugin docs](https://developers.openai.com/codex/plugins) and [hooks docs](https://developers.openai.com/codex/hooks) at install time.
+> Hook-config validation is docs-grade and should be confirmed against the live [Codex hooks docs](https://developers.openai.com/codex/hooks) at install time.
 
-1. Add the Seaglass marketplace / plugin in the Codex plugin surface and install the `seaglass` plugin.
+1. `codex plugin marketplace add drummel/seaglass-alpha`, then `codex plugin add seaglass@seaglass-memory` (Codex 0.131.0 or later).
 2. **Trust the hooks.** Installing a plugin does not trust its executable hooks. Open `/hooks`, review the Seaglass session hooks, and trust them, otherwise they stay skipped.
 3. **Authenticate the connector** the first time a memory tool is used: run `codex mcp login seaglass` (or click Authenticate) and approve in the browser. The token is managed by Codex; no token lives in any config file.
 
