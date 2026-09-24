@@ -58,6 +58,6 @@ The plugin opens and closes no Seaglass session of its own: the connector's
 - `hermes plugins list` should show `seaglass-hermes` as enabled.
 - `hermes mcp list` should show the Seaglass server under the name you added it
   as: `seaglass` in step 1, or the name the Seaglass Connect page used (outside
-  production it adds the environment, as in `seaglass-stg`). If its tools time out,
+  production it adds the environment, as in `seaglass-<environment>`). If its tools time out,
   run `hermes mcp login <that name>` to redo the browser sign-in.
 - `seaglass auth status` and `seaglass session briefing` show what the plugin will add.
