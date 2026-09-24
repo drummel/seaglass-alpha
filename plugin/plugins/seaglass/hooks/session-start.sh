@@ -1,7 +1,8 @@
 #!/bin/bash
-# SessionStart hook for the seaglass plugin. Host-neutral: runs under both
-# Claude Code (CLAUDE_ENV_FILE / CLAUDE_PLUGIN_ROOT) and ChatGPT/Codex
-# (PLUGIN_ROOT / PLUGIN_DATA).
+# SessionStart hook for the seaglass plugin. Host-neutral: runs under Claude
+# Code (CLAUDE_ENV_FILE / CLAUDE_PLUGIN_ROOT), ChatGPT/Codex (PLUGIN_ROOT /
+# PLUGIN_DATA), and Cursor, whose hooks file passes `cursor` as the first
+# argument.
 #
 # Persists per-session state under the plugin data dir, pins CLI/stdio write
 # attribution on Claude, and states the session's transport as model-visible
@@ -10,6 +11,7 @@
 # pointer to start_session and, once ever, the CLI install offer. It
 # never blocks the session.
 set -uo pipefail
+SG_HOOK_HOST="${1:-}"
 . "${BASH_SOURCE[0]%/*}/lib/runtime.sh"
 
 # Emit SessionStart context in the host's native shape. It states only what this
@@ -18,7 +20,10 @@ set -uo pipefail
 # agent from the server, so each rule keeps one home and none is restated here.
 emit() {
     local ctx="$1"
-    if sg_is_claude_host; then
+    if sg_is_cursor_host; then
+        # Cursor's sessionStart output: a flat additional_context field.
+        python3 -c 'import json,sys; print(json.dumps({"additional_context":sys.argv[1]}))' "$ctx"
+    elif sg_is_claude_host; then
         # Claude Code's documented SessionStart output contract.
         python3 -c 'import json,sys; print(json.dumps({"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":sys.argv[1]}}))' "$ctx"
     else
@@ -30,7 +35,7 @@ emit() {
 }
 
 INPUT_JSON="$(cat 2>/dev/null || true)"
-SESSION_ID="$(sg_json_field "$INPUT_JSON" session_id)"
+SESSION_ID="$(sg_session_id "$INPUT_JSON")"
 
 # Pin all this chat's writes to one agent_sessions row server-side. On Claude,
 # the writable CLAUDE_ENV_FILE carries SEAGLASS_CLIENT_SESSION_ID to the CLI +
@@ -52,8 +57,12 @@ fi
 # Resolve the transcript-capture opt-in once and pin it into per-session state
 # so the per-turn Stop/PreCompact hooks no-op without a network round trip.
 # Default off on any failure. On Claude, also mirror to CLAUDE_ENV_FILE (the
-# original fast path); the state file is the cross-host source of truth.
-if command -v seaglass >/dev/null 2>&1; then
+# original fast path); the state file is the cross-host source of truth. Cursor
+# stays off: its transcript format has not been checked against the upload, and
+# its hooks file registers no per-turn flush.
+if sg_is_cursor_host; then
+    sg_state_set "$SESSION_ID" capture off
+elif command -v seaglass >/dev/null 2>&1; then
     CAPTURE="$(sg_with_timeout 10 seaglass session transcript-config 2>/dev/null || echo off)"
     [[ "$CAPTURE" == "on" ]] || CAPTURE="off"
     sg_state_set "$SESSION_ID" capture "$CAPTURE"
@@ -78,6 +87,18 @@ INSTALL_HINT="run \`curl -fsSL ${INSTALL_URL} | bash\`"
 # because an agent-mode run read the profile, then took the user's stated fact
 # as background and captured nothing (2026-09-23).
 ORIENT="Seaglass is on its tools in this session. Call its \`start_session\` tool before anything else, without announcing it: it returns who the user is, their preferences and custom instructions, the rules for using Seaglass, and a map of the libraries and collections you can reach. Take it in quietly, then do what the user's message calls for, as you would have without the call: it is context for you, not news for them."
+
+# Cursor: the plugin ships the connector and its always-on rule names
+# start_session, so the tools are the transport whatever the CLI's state. The
+# CLI branch below would contradict that rule, and Cursor has no env file to
+# carry the session id to the agent's own CLI calls, so their writes would land
+# outside the session this hook started. The CLI offer is not made here either:
+# what it adds on other hosts (transcript capture, the resume briefing) is not
+# wired up for Cursor.
+if sg_is_cursor_host; then
+    emit "$ORIENT"
+    exit 0
+fi
 
 # No CLI: offer it once, ever, and record that the offer was made in the
 # plugin's data directory, which the host keeps across sessions. The transport

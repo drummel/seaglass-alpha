@@ -1,0 +1,16 @@
+{
+  "name": "seaglass",
+  "displayName": "Seaglass",
+  "version": "0.6.0",
+  "description": "Persistent memory across your AI tools: connects Cursor to the Seaglass memory layer and teaches it what to capture.",
+  "author": { "name": "Seaglass" },
+  "homepage": "https://github.com/drummel/seaglass-alpha",
+  "repository": "https://github.com/drummel/seaglass-alpha",
+  "logo": "assets/icon.png",
+  "keywords": ["memory", "context", "mcp", "wiki"],
+  "category": "productivity",
+  "rules": "./rules/",
+  "skills": "./skills/",
+  "hooks": "./hooks/cursor-hooks.json",
+  "mcpServers": "./.mcp.json"
+}

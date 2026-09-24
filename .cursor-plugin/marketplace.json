@@ -1,0 +1,16 @@
+{
+  "name": "seaglass-memory",
+  "owner": {
+    "name": "Seaglass"
+  },
+  "metadata": {
+    "description": "Seaglass personal memory layer: keeps your AI tools in sync across Cursor, Claude, Codex and the rest."
+  },
+  "plugins": [
+    {
+      "name": "seaglass",
+      "source": "plugin/plugins/seaglass",
+      "description": "The Seaglass memory layer in one install: the remote memory connector (browser sign-in), an always-on rule that opens every chat with start_session, the memory skills, and session hooks."
+    }
+  ]
+}
