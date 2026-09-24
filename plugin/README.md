@@ -48,10 +48,10 @@ The connector needs nothing installed. For the hooks and the CLI path:
 /plugin marketplace add drummel/seaglass-alpha
 
 # 2. Install the plugin (connector + skills + hooks)
-/plugin install seaglass@seaglass-memory
+/plugin install seaglass@seaglass-memory-stg
 
 # 3. Authorize the connector
-/mcp            # pick seaglass, choose Authenticate, approve in the browser
+/mcp            # pick plugin:seaglass:seaglass-stg, choose Authenticate, approve in the browser
 ```
 
 That's it. The connector is authorized once per machine and the tools load on the next turn; the hooks use whatever token `seaglass auth login` cached. Rotate the CLI token by re-running `seaglass auth login`; no client config change needed.
@@ -62,7 +62,7 @@ If you're working from a local clone instead of the GitHub repo:
 
 ```bash
 /plugin marketplace add /path/to/seaglass
-/plugin install seaglass@seaglass-memory
+/plugin install seaglass@seaglass-memory-stg
 ```
 
 An unpublished checkout still holds the `https://api-stg.seaglassai.com` placeholder in `.mcp.json`, so its connector points nowhere. Against a dev API, add the connector by hand instead:
@@ -79,7 +79,7 @@ The marketplace used to ship a second plugin, `seaglass-cli`, that taught the CL
 
 ```bash
 claude plugin uninstall seaglass-cli@seaglass-memory
-/plugin install seaglass@seaglass-memory
+/plugin install seaglass@seaglass-memory-stg
 ```
 
 Older installs under the pre-rename names (`seaglass-memory@seaglass-memory-plugin`, `seaglass-memory-cli@seaglass-memory-plugin`) uninstall the same way.
@@ -87,7 +87,7 @@ Older installs under the pre-rename names (`seaglass-memory@seaglass-memory-plug
 ### Uninstall
 
 ```bash
-claude plugin uninstall seaglass@seaglass-memory
+claude plugin uninstall seaglass@seaglass-memory-stg
 ```
 
 ## Install in Claude Desktop, claude.ai, and Cowork
@@ -132,9 +132,9 @@ The same plugin installs on ChatGPT/Codex from its plugin surface. One repo ship
 
 > Hook-config validation is docs-grade and should be confirmed against the live [Codex hooks docs](https://developers.openai.com/codex/hooks) at install time.
 
-1. `codex plugin marketplace add drummel/seaglass-alpha`, then `codex plugin add seaglass@seaglass-memory` (Codex 0.131.0 or later).
+1. `codex plugin marketplace add drummel/seaglass-alpha`, then `codex plugin add seaglass@seaglass-memory-stg` (Codex 0.131.0 or later).
 2. **Trust the hooks.** Installing a plugin does not trust its executable hooks. Open `/hooks`, review the Seaglass session hooks, and trust them, otherwise they stay skipped.
-3. **Authenticate the connector** the first time a memory tool is used: run `codex mcp login seaglass` (or click Authenticate) and approve in the browser. The token is managed by Codex; no token lives in any config file.
+3. **Authenticate the connector** the first time a memory tool is used: run `codex mcp login seaglass-stg` (or click Authenticate) and approve in the browser. The token is managed by Codex; no token lives in any config file.
 
 Hooks fire on Codex's `SessionStart`, `SessionEnd`, `Stop`, and `PreCompact` — both manifests point at the same `hooks/hooks.json`, which declares all four. A session that dies without its `SessionEnd` hook running is finalized by the server-side TTL sweep as a backstop. Install the CLI (`curl -fsSL https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh | bash`) and authenticate it (`seaglass auth login`) for the hooks and the shell path, exactly as on Claude Code.
 

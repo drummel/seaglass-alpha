@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "seaglass": {
+    "seaglass-stg": {
       "type": "http",
       "url": "https://api-stg.seaglassai.com/mcp"
     }
