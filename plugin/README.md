@@ -14,7 +14,7 @@ The hooks shell out to the `seaglass` CLI, so the CLI is the plugin's second, op
 
 **Just want the connector?** You do not need the plugin at all. Add your Seaglass server's connector URL (`<server>/mcp`) as a custom connector in claude.ai, Claude Desktop, Cowork, Cursor, or Claude Code, approve in the browser, and `search` works. The Connections page in the Seaglass web app has one-click buttons and copyable recipes for every client.
 
-A second, **experimental** plugin (`plugin/plugins/seaglass-hermes/`) targets the [Hermes](https://github.com/nousresearch/hermes-agent) agent. It is intentionally **not** published to the marketplace — its hook contract is unverified — so `marketplace.json` lists only `seaglass`. See its README before relying on it.
+A second plugin, `plugin/plugins/seaglass-hermes/`, is for the [Hermes](https://github.com/NousResearch/hermes-agent) agent. Hermes does not read Claude marketplaces, so `marketplace.json` lists only `seaglass`; Hermes installs the folder directly with `hermes plugins install drummel/seaglass-alpha/plugin/plugins/seaglass-hermes --enable`. Its README has the full setup.
 
 ## Prerequisites
 
