@@ -45,10 +45,10 @@ it, say so and give the user the line to run.
 | The decision the skill calls for | The command line it is here |
 |---|---|
 | Read: recall, "what do we know about X" | `seaglass search "X" --json` |
-| Write a fact | `seaglass memory store "..." --json` |
-| Write a document | `seaglass document store ... --json` |
+| Write a fact | `seaglass memory store --library <slug> --page ... --content "..." --json` |
+| Write a document | `seaglass document store --library <slug> ... --json` |
 | Correct or supersede a fact | `seaglass memory update ... --json` |
-| Author or edit a page | `seaglass page create` / `edit` / `append` |
+| Author or edit a page | `seaglass page create` / `edit` / `append`, each with `--library <slug>` |
 
 The skill decides *whether* an operation is called for and *what* goes in it;
 this table only says what it looks like once it is. The rest of this skill
@@ -137,7 +137,7 @@ under `annotations: [{id, content}]`.
 ## Write a memory: `seaglass memory store`
 
 ```bash
-seaglass memory store \
+seaglass memory store --library - \
   --page "Ada Example" --type people \
   --content "Ada is leading the Q3 launch on Project Example." \
   --link-projects "Project Example" --link-topics "Q3 launch" \
@@ -145,6 +145,10 @@ seaglass memory store \
   --json
 ```
 
+- `--library` is required on every write: the slug of the library the write
+  belongs in, from the map `seaglass me` prints (`-` is the account's default
+  library). Pick the library whose collections describe what you are writing;
+  a new page is created there, and `--page` is looked up only there.
 - `--page` takes a name, a typed slug or a typed id; `--type` is required
   only when creating a new root page, and is the library's plural type slug
   (`people`, `projects`, `topics`, or whatever the library defines).
@@ -165,9 +169,9 @@ seaglass memory store \
 ## Write a document: `seaglass document store`
 
 ```bash
-seaglass document store --file ./notes.md --page "<name>" --type projects --json
-echo "<paste body>" | seaglass document store --title "Q3 standup" --stdin --page "Q3 launch" --type projects --json
-seaglass document store --file ./long-transcript.md --via-upload --page "Q3 standup" --type projects --json
+seaglass document store --library - --file ./notes.md --page "<name>" --type projects --json
+echo "<paste body>" | seaglass document store --library - --title "Q3 standup" --stdin --page "Q3 launch" --type projects --json
+seaglass document store --library - --file ./long-transcript.md --via-upload --page "Q3 standup" --type projects --json
 ```
 
 `--via-upload` POSTs the body through the upload endpoint instead of the
@@ -183,7 +187,7 @@ web pages and transcripts where the mtime means nothing.
 ```bash
 seaglass annotate document_01HX... \
   "User clarified that this spec was the one Ada objected to in the budget discussion." \
-  --page "Project Example" --json
+  --library - --page "Project Example" --json
 ```
 
 Attaches post-hoc context to an existing `document_*` or `memory_*`; the
@@ -210,21 +214,21 @@ The other `--action` values are `supersede` (with `--successor`),
 
 ```bash
 # Register a page without writing a memory about it
-seaglass page create --type projects --title "Project Example" --json
-seaglass page create --type people --title "Ada Example" --identity-hint "Linear PM" --json
+seaglass page create --library - --type projects --title "Project Example" --json
+seaglass page create --library - --type people --title "Ada Example" --identity-hint "Linear PM" --json
 
 # Author or revise one section, citing the captures that justify it.
 # Omit --base-version and `page edit` fetches the current version for you.
-seaglass page edit "Ada Example" \
+seaglass page edit "Ada Example" --library - \
   --section "Current role" \
   --content "Staff designer at [[Anthropic]]. Started 2026-05-06." \
   --evidence memory_01HX... --evidence document_01HX... \
   --edit-summary "job change" --json
 
-seaglass page append "Ada Example" --section "Working style" --content "..." --json
+seaglass page append "Ada Example" --library - --section "Working style" --content "..." --json
 seaglass page history "Ada Example" --json
-seaglass page revert "Ada Example" --to-version 3 --json
-seaglass page move "projects/seaglass" "projects/atlas" --json
+seaglass page revert "Ada Example" --library - --to-version 3 --json
+seaglass page move "projects/seaglass" "projects/atlas" --library - --json
 ```
 
 `--evidence` is repeatable and is the `evidence_memory_ids` /
