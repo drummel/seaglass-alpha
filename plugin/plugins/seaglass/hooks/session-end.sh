@@ -1,14 +1,15 @@
 #!/bin/bash
-# SessionEnd hook for the seaglass plugin. Claude Code and Cursor (whose hooks
-# file passes `cursor` as the first argument).
+# SessionEnd hook for the seaglass plugin. Claude Code, Codex (which reads the
+# same hooks.json), and Cursor (whose hooks file passes `cursor` as the first
+# argument).
 #
-# Codex has no SessionEnd event: its Stop is turn-scope (it fires after every
-# assistant response), so it must never be mapped to `session end`. On Codex the
-# last Stop/PreCompact flush plus the server-side TTL sweep finalize an abandoned
-# session. On Claude and Cursor this hook flushes + finalizes the transcript
-# when capture is on (never on Cursor, where session-start leaves it off),
-# closes the agent_sessions row, then clears per-session state. Best-effort:
-# empty id, missing CLI, or any CLI error is silent; the TTL sweep is the net.
+# Codex's Stop is turn-scope (it fires after every assistant response), so it
+# is never mapped to `session end`; Codex's own SessionEnd event runs this hook.
+#
+# On every host this hook flushes + finalizes the transcript when capture is
+# on (never on Cursor, where session-start leaves it off), closes the
+# agent_sessions row, then clears per-session state. Best-effort: empty id,
+# missing CLI, or any CLI error is silent; the TTL sweep is the net.
 set -uo pipefail
 SG_HOOK_HOST="${1:-}"
 . "${BASH_SOURCE[0]%/*}/lib/runtime.sh"
