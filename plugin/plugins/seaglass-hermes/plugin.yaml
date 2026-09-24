@@ -1,0 +1,6 @@
+name: seaglass-hermes
+version: 0.6.0
+description: "Seaglass memory for Hermes: tells the agent to open each conversation with Seaglass's start_session tool, and adds your resume briefing to the first turn. Memory tools come from the Seaglass MCP connector (hermes mcp add)."
+author: Seaglass
+provides_hooks:
+  - pre_llm_call
