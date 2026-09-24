@@ -6,12 +6,29 @@
 # ChatGPT/Codex (PLUGIN_ROOT / PLUGIN_DATA, with CLAUDE_* aliases set for
 # compatibility).
 
-# Per-session state directory. Prefer the plugin's writable data dir
-# (PLUGIN_DATA on Codex, CLAUDE_PLUGIN_DATA as its alias); fall back to a
-# stable config path so the hooks work even if neither is set.
+# The plugin's writable data dir, kept across sessions (PLUGIN_DATA on Codex,
+# CLAUDE_PLUGIN_DATA as its alias); fall back to a stable config path so the
+# hooks work even if neither is set.
+sg_data_dir() {
+    printf '%s' "${PLUGIN_DATA:-${CLAUDE_PLUGIN_DATA:-$HOME/.config/seaglass/plugin-state}}"
+}
+
+# Per-session state directory.
 sg_state_dir() {
-    local base="${PLUGIN_DATA:-${CLAUDE_PLUGIN_DATA:-$HOME/.config/seaglass/plugin-state}}"
-    printf '%s/sessions' "$base"
+    printf '%s/sessions' "$(sg_data_dir)"
+}
+
+# A plugin-wide flag that outlives the session (e.g. a one-time offer was made).
+sg_flag_set() {
+    local dir
+    dir="$(sg_data_dir)/flags"
+    mkdir -p "$dir" 2>/dev/null || return 0
+    : >"$dir/$1" 2>/dev/null || return 0
+}
+
+# True when the flag was set by an earlier session.
+sg_flag_get() {
+    [[ -f "$(sg_data_dir)/flags/$1" ]]
 }
 
 # Persist one key/value for a session (one file per key). No-op on empty id.

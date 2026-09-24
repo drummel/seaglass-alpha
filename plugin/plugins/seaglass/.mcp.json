@@ -1,9 +1,8 @@
 {
   "mcpServers": {
     "seaglass": {
-      "type": "stdio",
-      "command": "seaglass",
-      "args": ["bridge"]
+      "type": "http",
+      "url": "https://api-stg.seaglassai.com/mcp"
     }
   }
 }
