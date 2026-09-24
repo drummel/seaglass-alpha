@@ -9,9 +9,10 @@ This exists for two reasons:
 
 1. **Developer velocity.** Capture, replay, and audit memories without spinning
    up an MCP client.
-2. **Token-cheap agent integration.** Pair with the
-   [`seaglass-cli`](../plugin/plugins/seaglass-cli) plugin to teach Claude Code
-   (or any shell-capable agent) to drive Seaglass over `bash` instead of MCP.
+2. **Token-cheap agent integration.** The [`seaglass`](../plugin/plugins/seaglass)
+   plugin's skill carries a CLI reference that teaches Claude Code (or any
+   shell-capable agent) to drive Seaglass over `bash` instead of MCP, and its
+   session hooks shell out to this binary.
 
 The CLI is a single static binary (CGO disabled), so it has no runtime
 dependency, a sub-10ms cold start, and one Linux build runs on both glibc and
@@ -46,8 +47,11 @@ in-repo). For CI, inject a token via `SEAGLASS_TOKEN`.
 
 Run `seaglass --help`, or `seaglass <command> --help`, for the full surface:
 `auth`, `search`, `memory`, `document`, `annotate`, `page`, `profile`,
-`session`, `reconsolidate`, `install`, `bridge`, `whoami`, `tools`, `onboard`,
-`update`, and `send-product-feedback`.
+`session`, `reconsolidate`, `install`, `bridge`, `whoami`, `tools`, `update`,
+`me`, and `send-product-feedback`. `seaglass session start` is the first call
+of a session: it calls the server's `start_session` tool and prints the profile
+and any setup step (the plugin's `SessionStart` hook runs it when the CLI is
+signed in).
 
 ## Exit codes
 
@@ -64,7 +68,8 @@ Run `seaglass --help`, or `seaglass <command> --help`, for the full surface:
 
 `seaglass` POSTs JSON-RPC payloads to `${SEAGLASS_URL}/mcp` with the cached
 bearer token. Most subcommands wrap a single MCP tool call; `auth`, `install`,
-`update`, and the `session` / transcript commands speak to REST endpoints, and
+`update`, and the `session` / transcript commands speak to REST endpoints (all
+but `session start`, which calls the `start_session` tool), and
 `me` / `profile` read the `seaglass://profile` resource (profile *writes* live
 only in the admin web UI).
 

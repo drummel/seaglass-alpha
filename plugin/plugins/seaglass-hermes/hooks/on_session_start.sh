@@ -7,7 +7,7 @@
 # Hermes' exact hook stdin/stdout contract against live docs at build time.
 #
 # Reads stdin JSON ({session_id, ...}), pins the chat to one `sessions` row via
-# SEAGLASS_CLIENT_SESSION_ID, and prints the user's profile markdown on stdout
+# SEAGLASS_CLIENT_SESSION_ID, and prints `seaglass session start`'s readout on stdout
 # for Hermes to inject as context. Degrades to a silent no-op if `seaglass` is
 # missing, unauthed, or returns nothing — never blocks the session.
 set -uo pipefail
@@ -28,5 +28,6 @@ fi
 
 command -v seaglass >/dev/null 2>&1 || exit 0
 seaglass auth status >/dev/null 2>&1 || exit 0
-seaglass me 2>/dev/null || true
+# The CLI's start_session: the profile, the preferences and any setup step.
+seaglass session start 2>/dev/null || true
 exit 0
