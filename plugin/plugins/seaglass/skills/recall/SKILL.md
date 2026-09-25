@@ -1,6 +1,6 @@
 ---
 name: recall
-description: Load relevant context from Seaglass to prime the current conversation. Use when the user types /recall, asks "what do you know about X", "remind me about that project", "load my notes on Y", or at the start of a session before working on a topic.
+description: Load Seaglass context on a topic into the conversation. Invoked by the user as /recall [topic].
 disable-model-invocation: true
 argument-hint: [optional topic, person, or project]
 ---

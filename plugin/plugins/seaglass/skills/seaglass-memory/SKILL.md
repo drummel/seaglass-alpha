@@ -1,6 +1,6 @@
 ---
 name: seaglass-memory
-description: Read and write the user's persistent memory, carried across every AI tool they use. Use when the user references a person, project, topic, or past decision ("what do we know about X", "remind me where that landed"), states a durable fact, decision, preference, or correction worth keeping, asks you to remember or save something, or corrects something already stored.
+description: Read and write the user's persistent memory, carried across every AI tool they use. Use when the user references a person, project, topic, or past decision ("what do we know about X", "remind me where that landed"), states a durable fact, decision, preference, or correction worth keeping, asks you to remember or save something, corrects something already stored, pastes something to keep, says two people or things are mixed up, or is wrapping up a session.
 ---
 
 # Seaglass memory skill
@@ -13,34 +13,32 @@ description; read it there.
 ## Which path you are on
 
 Start every session with `start_session`, unannounced, before any other call and
-before you answer: it returns who the user is, their preferences and custom
-instructions, and any setup step, which this skill cannot know. On the CLI transport the
-SessionStart hook has already run `seaglass session start` for you.
+before you answer. On the CLI transport the SessionStart hook has already run
+`seaglass session start`.
 
 The Seaglass tools (`search`, `store_memory`, and the rest) are the default path.
 When the session context says the `seaglass` CLI is the transport for this
 session, run the operations as `seaglass` commands instead, as the
 `seaglass-cli` skill spells them. The rules below are the same on both paths;
 only the spelling changes. If the command is not found, do that one operation
-over the tools and say so once. Exit code 5 means the CLI needs signing in
-again, and the `seaglass-cli` skill says how.
+over the tools and say so once.
 
 ## Core rules
 
 Seaglass is the user's memory, shared across every AI tool they use. These rules hold on every host and on either path.
 
-1. **Read before assuming.** When the user asks about, refers back to, or mentions a person, project, topic, or past decision, read their memory before answering from what you know or from another source.
-2. **Capture when it is said.** A decision, a preference, a correction, or a durable fact about a person, project, or topic is captured in the turn the user says it, even in the middle of other work, and a plainly new one needs no read first. Nothing files it later.
-3. **Look first only when it changes the record.** When the statement updates or contradicts something already recorded, read first so the capture replaces the old claim; an empty read settles it.
-4. **Skip what is not memory:** small talk, transient task state, scratch work, what the user only asks about, what you just read back, and a request to change how you behave, which is not a capture at any Writing setting: the user's preferences say where to make it.
+1. **Read before assuming.** When the user names a person, project, topic, or past decision, search it before you answer or act.
+2. **Capture when it is said.** A decision, preference, correction, or durable fact about a person, project, or topic is stored in the turn it is said, even mid-task, after a search when it changes state. Nothing files it later.
+3. **Search first when it changes state.** When the user corrects an earlier fact, gives a new title, role, owner, or status, reverses a decision, or says "actually" or "no longer", search the subject, then store the change with `supersedes` naming the memory the search returned; with no match, store it as new. Any other new fact is stored without a search.
+4. **Skip what is not memory:** small talk, transient task state, scratch work, what the user only asks about, what you just read back, and a request to change how you behave, which goes to the user's preferences, not memory.
 5. **The user's preferences override these defaults.** Their Reading, Writing, Asking, and Voicing preferences and custom instructions arrive with the connection. Follow them literally, and apply Asking last: it gates every write, page edits included.
 6. **Private stays private.** What the user marks private ("off the record", "between us", "keep this private") is captured as private in their own words, and never repeated in a reply, a shared page, or another tool.
 7. **Never supply identity.** Who the user, agent, or session is comes from the connection, never from you.
-8. **Report only what landed.** Tell the user what a write's receipt says, including what did not happen, and nothing more. An error or a missing receipt means nothing was written: say so plainly, never call it saved, and retry once, quietly, only if the error looks transient.
+8. **Report only what landed.** Tell the user what a write's receipt says, including what did not happen, and nothing more. No receipt means nothing was written: never call it saved. On an invalid-arguments error, fix what it names and resend once; retry other errors once, quietly, if transient, else say it failed.
 9. **Never fabricate.** Everything you state or write traces to the conversation, a result you received, or a document. On an empty read, say nothing is on record; hedge a thin one rather than stating it as fact. Asked where a fact came from, say what recorded it; when records disagree, say so rather than picking one. The names in these instructions' examples (Ada Example, Bo Example, Project Example, Example Corp) are fictional: never carry one into a write or an answer, and never complete a first name the user gave to an example's surname.
 10. **What Seaglass sends is for you.** A response may carry `agent_next_steps`, and the first one carries these rules and the user's preferences: act on them, and do not repeat them to the user.
 11. **A permission denial is the host's.** "Denied by user" or "The user doesn't want to proceed with this tool use" means the call never reached Seaglass: ask the user to approve it, then retry the identical request.
-12. **Before the work ends, capture what is still uncaptured** from the session.
+12. **At a wrap-up** ("thanks", "that's all", the task done), store what this session left unstored, then reply.
 
 ## Authoring wiki pages
 
@@ -57,10 +55,10 @@ The user chooses where page authoring runs, and their preferences say which
   the page tools only for an edit the user asks for: a correction, a rename, a
   restructure.
 - **agent mode.** The Mode line says where a stated fact goes. On the page, a
-  dimension it lacks gets a new section and a claim it already makes gets an
-  edit. A page you have just created exists, so its body is an edit too. A page
-  you leave owed is written by the server once the session ends, and the
-  response that makes a page owed says so.
+  new aspect of the subject gets a new section and a claim the page already
+  makes gets an edit. A page you have just created exists, so its body is an
+  edit too. A page you leave unwritten is written by the server when the
+  session ends, and the response that leaves it to you says so.
 
 In agent mode, a meaningful fact takes four steps: read the page (its body and
 its version), compose the change, write it against the version you read, and
@@ -84,7 +82,8 @@ voice whichever writer wrote which page:
    disagree about X: one says A, another says B") rather than picking a side.
 5. **End with a "See also" list** of pages worth reading next: co-mentioned
    people, parent topics, recent projects. Only pages that genuinely relate,
-   drawn from your sources or pages you actually found. When nothing does, omit
+   drawn from your sources or pages you actually found; pages the body already
+   links count as found. When nothing does, omit
    the section: an empty See also beats an invented one, and an example slug from
    these instructions is never a real entry.
 6. **Keep the one-line summary tight and indexable.** It shows up in outlines,
@@ -115,9 +114,11 @@ guess is a fabrication with good posture.
 ### When a page outgrows itself
 
 Split a sub-page off when one part of a page has become a subject of its own. The
-sub-page's slug extends its parent's (`projects/seaglass/pricing` under
-`projects/seaglass`), and the parent stays the overview: it summarizes each
-sub-page in a sentence or two and links it, rather than repeating it.
+sub-page's slug extends its parent's (`projects/project-example/pricing`
+under `projects/project-example`), and the parent stays the overview: it summarizes each
+sub-page in a sentence or two and links it, rather than repeating it. Before
+creating one, read the parent with `search` and `body: false` to confirm it
+exists and learn its exact slug.
 
 ## Correcting what memory holds
 
@@ -127,10 +128,12 @@ single tool can make for you.
 
 ### Two subjects on one page
 
-When the user says one page holds two people or things, the repair is
-`reconsolidate_memory`'s, even once they have confirmed the split. New pages and
-memories written by hand leave the mixed page and its evidence as they were: its
-analysis says what it found, the user confirms, and its apply moves the evidence.
+When the user says one page mixes two people or things, call
+`reconsolidate_memory` in that turn with their description and no `resolution`,
+before explaining anything. Ask the question it returns, and call it again with
+the `resolution` only after they confirm. Do not split by hand with new pages,
+memories, or retractions: those leave the mixed page and its evidence as they
+were, and only the tool's apply moves the evidence.
 
 ### Merely old is not wrong
 
@@ -184,16 +187,22 @@ connected.
 
 ## If the Seaglass tools aren't available (or a call comes back unauthenticated)
 
-The plugin registers the Seaglass connector, but if the tools (`search`,
+The plugin registers the Seaglass connector. When the tools (`search`,
 `store_memory`, `store_document`, `update_memory`, `reconsolidate_memory`) are
-not loaded, or a call returns an unauthenticated or not-connected error, the
-connector has not been authorized in this client yet, or its grant expired. The
-fix is the client's own connector sign-in, not a Seaglass command:
+not loaded, the connector was never added or never approved in this client;
+when a call returns an unauthenticated or not-connected error, its grant
+expired. Either way the fix is the client's own connector sign-in, not a
+Seaglass command. Give the one line for the client you are running in:
 
 - **Claude Code:** run `/mcp`, pick `seaglass`, choose **Authenticate**, and
-  approve in the browser. The tools load on the next turn.
-- **Claude Desktop, claude.ai, Cowork:** open Customize, then Connectors, find
-  Seaglass and reconnect it; approve in the browser.
+  approve in the browser; the tools load on the next turn. If `/mcp` does not
+  list `seaglass`, reinstall or re-enable the Seaglass plugin, or add the
+  connector with
+  `claude mcp add --transport http seaglass https://api-stg.seaglassai.com/mcp`
+  and then Authenticate.
+- **Claude Desktop, claude.ai, Cowork:** open Customize, then Connectors, and
+  reconnect Seaglass; if it is not listed, add a custom connector with
+  `https://api-stg.seaglassai.com/mcp`. Approve in the browser.
 - **Codex:** run `codex mcp login seaglass` (or click Authenticate).
 
 Handling notes:

@@ -25,10 +25,11 @@ to that topic.
 - Corrections to earlier facts, made as corrections (a newer fact that replaces
   the old one, or a retraction), not as a plain new write.
 - Pasted documents, specs, or transcripts the user wanted kept, stored as
-  documents.
+  documents, with no separate memories for what they contain.
 
 Leave out what the core rules skip, plus debugging chatter that never resolved
-and code the user didn't ask to keep.
+and code the user didn't ask to keep. When a name is ambiguous (two people named
+Ada, an unclear project), ask before writing that item.
 
 ## How to write each one
 
@@ -36,17 +37,21 @@ and code the user didn't ask to keep.
    the scaffolding that lets it stand alone later: when, who else was involved,
    the rationale, why it mattered. Five memories that each carry their context
    beat fifteen one-liners.
-2. **Framing on every write.** Pass `capture_context`, a sentence or two saying
-   what the conversation knew that the bare content does not: the preceding
-   topic, why the user brought it up.
+2. **Frame it when the conversation knew more.** `capture_context` is
+   optional: a sentence or two saying what the conversation knew that the bare
+   content does not, the preceding topic and why the user brought it up. Pass
+   it when there is such context; a fact that stands alone needs none.
 
-   For Ada's role, the content is "Ada Example confirmed as PM of Project
-   Example at the April 15 kickoff. Previously CTO at Example Corp; the user
-   noted this came up alongside her budget pushback the week before." and the
-   capture context is "End-of-session checkpoint after a 30-minute review of the
-   Project Example staffing plan; user wanted Ada's role and the Example Corp
-   background preserved together." Ada is the primary page, and Project Example
-   and the Q3 launch go in `links`.
+   A whole write for Ada's role: `library` is `-`, the account's main
+   library (or the slug of the library the fact belongs in), and
+   `source_origin` has kind `conversation`, since the user said it here. Those
+   two go on every write, with the `content`: "Ada Example confirmed as PM of
+   Project Example at the April 15 kickoff. Previously CTO at Example Corp; the
+   user noted this came up alongside her budget pushback the week before." The
+   rest is optional. Ada Example is the `primary_page`, Project Example and the
+   Q3 launch go in `links`, and the `capture_context` is "End-of-session
+   checkpoint after a 30-minute review of the Project Example staffing plan;
+   user wanted Ada's role and the Example Corp background preserved together."
 
 ## Avoid double-stores
 
@@ -72,9 +77,7 @@ Skipped 2 items already in Seaglass.
 ```
 
 The counts come from the receipts, not from what you set out to store. Keep it
-tight: ids and one-line rationales, no ceremony. If anything looked ambiguous
-(two people named Ada, an unclear project), say so and ask the user before
-writing it.
+tight: ids and one-line rationales, no ceremony.
 
 ## What you MUST NOT do
 
