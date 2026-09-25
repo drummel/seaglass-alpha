@@ -37,15 +37,22 @@ Pin a version with `SEAGLASS_VERSION=1.2.3`, or an install dir with
 # Browser-link auth: opens the admin UI, you click Approve, token is cached.
 # Pass --url to log in to a specific server and pin it for later commands.
 seaglass auth login --url https://your-seaglass.example.com
+
+# No browser (an agent with the Seaglass MCP tools): the cli_handoff tool
+# returns a single-use code.
+seaglass auth redeem <code>
 ```
 
 The token is written to `~/.config/seaglass/token` and the URL pin to
 `~/.config/seaglass/config.json`. The server URL resolves through three layers,
 most-specific first: `SEAGLASS_URL` (env) > the `auth login --url` pin > the
 baked default (the hosted server in a published build; `http://localhost:8008`
-in-repo). For CI, inject a token via `SEAGLASS_TOKEN`.
+in-repo). For CI, inject a token via `SEAGLASS_TOKEN`; while it is set it
+overrides the saved token, and `auth login` / `auth redeem` say so.
 
-Run `seaglass --help`, or `seaglass <command> --help`, for the full surface:
+Run `seaglass --help`, or `seaglass <cmd> --help`, for the full surface
+(each command's help marks its required flags and lists every flag's allowed
+values and default):
 `auth`, `search`, `memory`, `document`, `annotate`, `page`, `profile`,
 `session`, `reconsolidate`, `install`, `bridge`, `whoami`, `tools`, `update`,
 `me`, and `send-product-feedback`. `seaglass session start` is the first call
@@ -55,14 +62,14 @@ signed in).
 
 ## Exit codes
 
-| code | meaning |
-|---|---|
-| 0 | success |
-| 1 | generic failure |
-| 2 | usage error |
-| 3 | not found (`search` returned `no_match`) |
-| 4 | resolution required (ambiguous page reference) |
-| 5 | auth failure (token missing, revoked, or invalid) |
+| code | meaning | what to do |
+|---|---|---|
+| 0 | success | continue |
+| 1 | generic failure (a changed command will not fix it) | read stderr; investigate |
+| 2 | usage error: the command line is wrong (a flag missing, unknown, or with a bad value; a `--type` to add; a heading the page lacks; a library you cannot use), and stderr names the fix | fix the command as stderr says (`seaglass <cmd> --help`), rerun once |
+| 3 | not found (`search` returned `no_match`, or a named page or resource does not exist) | tell the user honestly |
+| 4 | resolution required (ambiguous page reference) | ask the user the clarification question |
+| 5 | auth failure (token missing, revoked, or invalid) | With the Seaglass MCP tools connected: call the cli_handoff tool, then run `seaglass auth redeem <code>` with the code it returns. Without them: run `seaglass auth login`, which opens a browser for the user to approve. Then rerun the failed command once. A set `SEAGLASS_TOKEN` overrides the saved token. |
 
 ## How it works
 

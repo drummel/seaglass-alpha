@@ -1,6 +1,6 @@
 ---
 name: status
-description: Report whether this client is actually connected to Seaglass, and what to run if it isn't. Use when the user types /status, asks "is Seaglass working", "am I connected", "why isn't Seaglass saving anything", or when a Seaglass tool call has just failed.
+description: Report whether this client is actually connected to Seaglass, and what to run if it isn't. Use when the user types /status, asks "is Seaglass working", "am I connected", or "why isn't Seaglass saving anything".
 disable-model-invocation: true
 ---
 
@@ -38,25 +38,16 @@ it is idempotent and costs nothing.
 
 ## What to report
 
-**Disconnected**: say so plainly, then give exactly one route. If the Seaglass
-plugin is installed, the connector should have come with it, so prefer telling
-the user to reinstall or re-enable the plugin and approve it in the browser.
-Otherwise give the command:
+**Disconnected**: say so plainly, then give the one step for this client from
+the `seaglass-memory` skill's "If the Seaglass tools aren't available" section,
+which is the one home of the reconnect recipe (load that skill if it is not in
+context):
 
 ```
 Not connected. The Seaglass tools aren't in this session.
 
-Add the connector:
-
-    claude mcp add --transport http seaglass https://api-stg.seaglassai.com/mcp
-
-Then run /mcp, choose Authenticate, and approve in the browser.
+<the one reconnect step for this client, from that section>
 ```
-
-On a Claude surface that is not Claude Code (Desktop, Cowork, the web app), the
-connector is added once per account instead: Settings, Connectors, Add custom
-connector, with the same URL. Pick the line that matches where you are running;
-do not print both.
 
 **Connected**: lead with the confirmation, then the setup state. One or two
 lines is usually enough:
@@ -72,8 +63,8 @@ do it the way its result says to. Do not list every possible remedy.
 
 The plugin ships the Seaglass connector, so installing it should give you the
 tools directly, with no separate setup. If the tools are missing anyway, the
-connector was not registered or was never approved in the browser; the recipe
-above fixes both.
+connector was not registered or was never approved in the browser; the
+reconnect recipe fixes both.
 
 The `seaglass` CLI is a separate, optional power-up. It is not needed for
 memory reads or writes; it adds transcript capture and the resume briefing.
@@ -89,4 +80,3 @@ approval), and run it on yes.
   connector are independent; only the presence of the tools settles it.
 - Don't retry a failed tool call to "test" the connection. One failure is the
   answer.
-- Don't print both the Claude Code and the account-level recipe. Choose.

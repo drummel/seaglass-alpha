@@ -67,17 +67,20 @@ Two failure modes:
 - **Exit code 5 from any command, or `seaglass whoami` non-zero**: installed
   but not authenticated. When the Seaglass MCP tools are connected, call
   `cli_handoff` and run the `seaglass auth redeem <code>` command it returns:
-  no browser, and nothing for the user to approve. Without the tools, offer to
+  no browser, and nothing for the user to approve. Without the tools, reply
+  with the offer at once, without first probing with `seaglass auth status` or
+  `whoami` (the exit code already says what is wrong): offer to
   run `seaglass auth login` for the user rather than only describing it: say
   what it does and ask once, then run it on yes. It opens a browser and blocks
   until the user approves, so confirm before firing it. Either way the bearer
   token is cached at `~/.config/seaglass/token`, and every later `seaglass`
-  call picks it up. For a non-default deployment they
-  `export SEAGLASS_URL=https://...` before logging in.
+  call picks it up: rerun the command that failed, once. For a non-default
+  deployment they `export SEAGLASS_URL=https://...` before logging in.
 
 `SEAGLASS_TOKEN` exists as a CI / non-interactive fallback (the env var wins
 over the cached file). Mention it only if the user asks about scripted or
-headless auth.
+headless auth, or when `auth redeem` prints that it is set: then the saved
+token is shadowed until it is unset.
 
 ```bash
 seaglass auth login              # opens a browser; ask the user first, then run on yes
@@ -116,6 +119,7 @@ seaglass search "<query>" --json
 seaglass search "Ada Example" --type people --limit 5 --json
 seaglass search "projects/project-example" --json      # typed slug: exact page
 seaglass search "<query>" --no-body --json              # skeleton only: outline, no body
+seaglass search "<query>" --library - --after 2026-04-01T00:00:00Z --json   # one library, a time window
 ```
 
 Inspect the JSON `mode`:
@@ -125,7 +129,10 @@ Inspect the JSON `mode`:
 - `document`: full content in `document.content`.
 - `memory`: one memory in `memory.content`.
 - `index`: ranked results. Use the top hit when `suggested_action` is
-  `use_top_candidate`; otherwise present options.
+  `use_top_candidate`; otherwise present options. A result with `kind`
+  `memory` is a memory on no page, and one with `kind` `document` is a stored
+  document: its `excerpt` quotes the passage that matched, and searching its
+  `id` returns all of it.
 - `resolution_required` (exit code 4): render
   `suggested_clarification_question` to the user and wait for their answer
   before retrying with the disambiguated `id` from `results`.
@@ -145,13 +152,19 @@ seaglass memory store --library - \
   --json
 ```
 
-- `--library` is required on every write: the slug of the library the write
-  belongs in, from the map `seaglass me` prints (`-` is the account's default
-  library). Pick the library whose collections describe what you are writing;
-  a new page is created there, and `--page` is looked up only there.
-- `--page` takes a name, a typed slug or a typed id; `--type` is required
+- `--library` is the `library` argument, required on every write: the slug of
+  the library the write belongs in, from the map `seaglass me` prints (`-` is
+  the account's main library). Pick the library whose collections describe
+  what you are writing; a new page is created there, and `--page` is looked up
+  only there.
+- `--content` (or `--stdin`, or `--file`) is the `content` argument.
+- `--source-kind` fills `source_origin`; it defaults to `conversation`, so
+  pass it only for another origin (`paste` for text the user pasted).
+- `--page` takes a name, a typed slug or a typed id. Pass it on nearly every
+  write; with no `--page` the memory is stored unfiled. `--type` is required
   only when creating a new root page, and is the library's plural type slug
   (`people`, `projects`, `topics`, or whatever the library defines).
+- `--title "..."` is the one-line `title`.
 - The link flags mirror the `links` argument: `--link-people`,
   `--link-projects`, `--link-topics`, each repeatable. Other categories are
   not linkable by flag; name the page inline as `[[Canonical Name]]` in
@@ -170,14 +183,16 @@ seaglass memory store --library - \
 
 ```bash
 seaglass document store --library - --file ./notes.md --page "<name>" --type projects --json
-echo "<paste body>" | seaglass document store --library - --title "Q3 standup" --stdin --page "Q3 launch" --type projects --json
+echo "<paste body>" | seaglass document store --library - --title "Q3 standup" --stdin --source-kind paste --page "Q3 launch" --type projects --json
 seaglass document store --library - --file ./long-transcript.md --via-upload --page "Q3 standup" --type projects --json
 ```
 
 `--via-upload` POSTs the body through the upload endpoint instead of the
 JSON-RPC argument: same auth and provenance, cheaper for large bodies, and a
 re-upload of the same body returns `{deduplicated: true}` with no new
-extraction. `--no-extract` is `extract=false`. `--file` auto-captures the
+extraction. It takes the same flags as the JSON-RPC path and needs `--file`.
+`--no-extract` is `extract=false`. `--source-kind` defaults to a file upload; pass `paste` for
+pasted text. `--file` auto-captures the
 file's modification time as `--source-modified-at`; pass `--no-source-mtime`
 to skip it, or `--source-authored-at` / `--source-modified-at` explicitly for
 web pages and transcripts where the mtime means nothing.
@@ -200,10 +215,15 @@ annotation participates in synthesis like any other memory.
 seaglass memory update memory_01HX... --action retract --note "wrong manager, user-confirmed" --json
 
 # Diagnose memory confusion (analysis mode, no resolution)
-seaglass reconsolidate "I think you have the wrong Steve" --json
-# Apply a resolution after the user confirms
-seaglass reconsolidate "split Steve" --kind split --details-json '{...}' --json
+seaglass reconsolidate "the Ada Example page mixes two different people" --json
+# After the user confirms, apply one suggested resolution with the same query
+seaglass reconsolidate "the Ada Example page mixes two different people" --kind split \
+  --details-json '{"from_page_id": "page_01HX...", "new_pages": [{"title": "Ada Example (Example Corp)", "memory_ids": ["memory_01HX..."], "document_ids": []}]}' \
+  --json
 ```
+
+`--resolution-json` takes one `suggested_resolutions` entry unchanged, in
+place of `--kind` and `--details-json`.
 
 The other `--action` values are `supersede` (with `--successor`),
 `flag_sensitive`, `flag_private` and `redact`. A newer fact is one
@@ -215,20 +235,20 @@ The other `--action` values are `supersede` (with `--successor`),
 ```bash
 # Register a page without writing a memory about it
 seaglass page create --library - --type projects --title "Project Example" --json
-seaglass page create --library - --type people --title "Ada Example" --identity-hint "Linear PM" --json
+seaglass page create --library - --type people --title "Ada Example" --identity-hint "Example Corp PM" --json
 
 # Author or revise one section, citing the captures that justify it.
 # Omit --base-version and `page edit` fetches the current version for you.
 seaglass page edit "Ada Example" --library - \
   --section "Current role" \
-  --content "Staff designer at [[Anthropic]]. Started 2026-05-06." \
+  --content "Staff designer at [[Example Corp]], a role she started last month." \
   --evidence memory_01HX... --evidence document_01HX... \
   --edit-summary "job change" --json
 
-seaglass page append "Ada Example" --library - --section "Working style" --content "..." --json
+seaglass page append "Ada Example" --library - --heading "Working style" --content "Prefers async reviews over meetings." --json
 seaglass page history "Ada Example" --json
 seaglass page revert "Ada Example" --library - --to-version 3 --json
-seaglass page move "projects/seaglass" "projects/atlas" --library - --json
+seaglass page move "projects/project-example" "projects/project-example-v2" --library - --json
 ```
 
 `--evidence` is repeatable and is the `evidence_memory_ids` /
@@ -254,8 +274,8 @@ design; they are MCP-only.
 {"mode": "page",     "page":     {"id": "page_01...", "slug": "people/ada-example", "title": "Ada Example", "synthesis_markdown": "..."}}
 {"mode": "document", "document": {"id": "document_01...", "title": "...", "content": "..."}}
 {"mode": "memory",   "memory":   {"id": "memory_01...", "content": "...", "primary_page_id": "page_01..."}}
-{"mode": "index",    "results":  [{"id": "memory_01...", "score": 0.84, "preview": "..."}], "suggested_action": "use_top_candidate"}
-{"mode": "resolution_required", "results": [...], "suggested_clarification_question": "Did you mean Ada Example (Linear PM) or Ada Example (the founder)?"}
+{"mode": "index",    "results":  [{"id": "page_01...", "kind": "page", "title": "...", "excerpt": "...", "match_score": 0.033}, {"id": "memory_01...", "kind": "memory", "title": "...", "excerpt": "...", "match_score": 0.016}, {"id": "document_01...", "kind": "document", "title": "...", "excerpt": "...", "match_score": 0.016}], "suggested_action": "use_top_candidate"}
+{"mode": "resolution_required", "results": [...], "suggested_clarification_question": "Did you mean Ada Example (Example Corp PM) or Ada Example (the founder)?"}
 {"mode": "no_match", "results": []}
 ```
 
@@ -280,14 +300,13 @@ response carries the same `receipt` the tools return.
 | code | meaning | action |
 |---|---|---|
 | 0 | success | continue |
-| 1 | generic failure | read stderr; do not retry blindly |
-| 3 | not found | tell the user honestly; do not fabricate |
-| 4 | resolution required (ambiguous page) | ask the user the clarification question shown in stderr / `--json` data |
-| 5 | auth failure | `cli_handoff` when the MCP tools are connected, else offer `seaglass auth login`; do not retry |
+| 1 | generic failure (a changed command will not fix it) | read stderr; do not retry blindly |
+| 2 | usage error: the command line is wrong (a flag missing, unknown, or with a bad value; a `--type` to add; a heading the page lacks; a library you cannot use), and stderr names the fix | fix the command as stderr says (`seaglass <cmd> --help`), rerun once |
+| 3 | not found (`search` returned `no_match`, or a named page or resource does not exist) | tell the user honestly; do not fabricate |
+| 4 | resolution required (ambiguous page reference) | ask the user the clarification question shown in stderr / `--json` data |
+| 5 | auth failure (token missing, revoked, or invalid) | With the Seaglass MCP tools connected: call the cli_handoff tool, then run `seaglass auth redeem <code>` with the code it returns. Without them: run `seaglass auth login`, which opens a browser for the user to approve. Then rerun the failed command once. Never loop. |
 
-A denial with no exit code ("Denied by user", "The user doesn't want to
-proceed with this tool use") is the host's permission layer: the command never
-ran. Ask the user to approve, then rerun it unchanged.
+A host denial with no exit code is core rule 11.
 
 ## What you MUST NEVER pass
 
