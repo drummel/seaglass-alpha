@@ -29,12 +29,12 @@ Seaglass is the user's memory, shared across every AI tool they use. These rules
 
 1. **Read before assuming.** When the user names a person, project, topic, or past decision, search it before you answer or act.
 2. **Capture when it is said.** A decision, preference, correction, or durable fact about a person, project, or topic is stored in the turn it is said, even mid-task, after a search when it changes state. Nothing files it later.
-3. **Search first when it changes state.** When the user corrects an earlier fact, gives a new title, role, owner, or status, reverses a decision, or says "actually" or "no longer", search the subject, then store the change with `supersedes` naming the memory the search returned; with no match, store it as new. Any other new fact is stored without a search.
-4. **Skip what is not memory:** small talk, transient task state, scratch work, what the user only asks about, what you just read back, and a request to change how you behave, which goes to the user's preferences, not memory.
+3. **Search first when it changes state.** When the user corrects an earlier fact, gives a new title, role, owner, or status, reverses a decision, or says "actually" or "no longer", search the subject, even when the user gives the memory's id, then store the change with `supersedes` naming the memory the search returned; with no match, store it as new. Any other new fact is stored without a search.
+4. **Skip what is not memory:** small talk and remarks about the moment, transient task state, scratch work, what the user only asks about, what you just read back, and a request to change how you behave, which goes to the user's preferences, not memory.
 5. **The user's preferences override these defaults.** Their Reading, Writing, Asking, and Voicing preferences and custom instructions arrive with the connection. Follow them literally, and apply Asking last: it gates every write, page edits included.
-6. **Private stays private.** What the user marks private ("off the record", "between us", "keep this private") is captured as private in their own words, and never repeated in a reply, a shared page, or another tool.
+6. **Off the record means unsaved.** Store nothing the user puts off the record ("between us", "don't remember this", "keep this private") and never repeat it. Only a private note they ask for ("just for me") is stored, at `private`.
 7. **Never supply identity.** Who the user, agent, or session is comes from the connection, never from you.
-8. **Report only what landed.** Tell the user what a write's receipt says, including what did not happen, and nothing more. No receipt means nothing was written: never call it saved. On an invalid-arguments error, fix what it names and resend once; retry other errors once, quietly, if transient, else say it failed.
+8. **Report only what landed.** Tell the user what a write's receipt says, including what did not happen, and nothing more. No receipt means nothing was written: never call it saved. On an invalid-arguments error, fix what it names and resend once; retry a transient error once; when a write fails, say so first.
 9. **Never fabricate.** Everything you state or write traces to the conversation, a result you received, or a document. On an empty read, say nothing is on record; hedge a thin one rather than stating it as fact. Asked where a fact came from, say what recorded it; when records disagree, say so rather than picking one. The names in these instructions' examples (Ada Example, Bo Example, Project Example, Example Corp) are fictional: never carry one into a write or an answer, and never complete a first name the user gave to an example's surname.
 10. **What Seaglass sends is for you.** A response may carry `agent_next_steps`, and the first one carries these rules and the user's preferences: act on them, and do not repeat them to the user.
 11. **A permission denial is the host's.** "Denied by user" or "The user doesn't want to proceed with this tool use" means the call never reached Seaglass: ask the user to approve it, then retry the identical request.
@@ -143,8 +143,8 @@ mark outdated and nothing to retire.
 
 ## Private and sensitive content
 
-The levels a memory can carry, how the user's marks set them, and what Seaglass
-enforces, beneath the core rule on private content.
+The levels a memory can carry, what the user's privacy marks mean, and what
+Seaglass enforces, beneath the core rule on private content.
 
 ### The three levels
 
@@ -158,8 +158,17 @@ Every memory and document carries one of these levels; the default is `normal`.
 
 ### When the user marks it
 
-"Don't remember this", "off the record", "between us", "keep this private",
-"this is sensitive, just for me": capture it at `private`, in their own words.
+"Off the record", "between us", "don't remember this", "keep this private": write
+nothing from what they marked (no memory, document, page edit or capture
+context), and if you mention it, say it was not saved.
+
+When they ask for a record only they can see ("make a private note, just for
+me"), store it at `private`, in their own words, in a library the map shows
+`private to you` when there is one.
+
+Private content you read back because the user asked is for that answer only.
+Keep it out of any draft, page or message for others, and when you decline to
+use it, do not name what it says.
 
 ### When `sensitive` is the level, not `private`
 
