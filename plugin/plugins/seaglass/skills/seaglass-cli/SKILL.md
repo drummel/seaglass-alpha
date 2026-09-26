@@ -300,7 +300,7 @@ response carries the same `receipt` the tools return.
 | code | meaning | action |
 |---|---|---|
 | 0 | success | continue |
-| 1 | generic failure (a changed command will not fix it) | read stderr; do not retry blindly |
+| 1 | generic failure (a changed command will not fix it) | read stderr; an HTTP 5xx is retried once (core rule 8), nothing else is |
 | 2 | usage error: the command line is wrong (a flag missing, unknown, or with a bad value; a `--type` to add; a heading the page lacks; a library you cannot use), and stderr names the fix | fix the command as stderr says (`seaglass <cmd> --help`), rerun once |
 | 3 | not found (`search` returned `no_match`, or a named page or resource does not exist) | tell the user honestly; do not fabricate |
 | 4 | resolution required (ambiguous page reference) | ask the user the clarification question shown in stderr / `--json` data |
