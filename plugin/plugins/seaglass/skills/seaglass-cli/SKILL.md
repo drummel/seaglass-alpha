@@ -172,7 +172,6 @@ seaglass memory store --library - \
 - `--capture-context "..."` is the `capture_context` argument.
 - `--supersedes memory_01HX...` is the `supersedes` argument: one write that
   captures the correction and retires what it replaces.
-- `--sensitivity private|sensitive` sets the level.
 - `--event-phrase "<the user's words>"` is the `event_phrase` argument: when it
   happened, as the user said it ("yesterday", "last week"). The server dates it;
   pass the words, not a date.
@@ -225,10 +224,9 @@ seaglass reconsolidate "the Ada Example page mixes two different people" --kind 
 `--resolution-json` takes one `suggested_resolutions` entry unchanged, in
 place of `--kind` and `--details-json`.
 
-The other `--action` values are `supersede` (with `--successor`),
-`flag_sensitive`, `flag_private` and `redact`. A newer fact is one
-`memory store --supersedes`, never retract-then-store, exactly as with the
-`supersedes` argument.
+The other `--action` values are `supersede` (with `--successor`) and
+`redact`. A newer fact is one `memory store --supersedes`, never
+retract-then-store, exactly as with the `supersedes` argument.
 
 ## Pages: `seaglass page ...`
 
@@ -313,8 +311,6 @@ A host denial with no exit code is core rule 11.
 - `--user-id`, `--agent-id`, `--session-id`, or any identity flag. They do not
   exist; auth comes from the cached token (or `SEAGLASS_TOKEN` in CI), never
   from a flag.
-- `--include-private` reflexively. Pass it only when the user explicitly asks
-  for their private notes, exactly as with `include_private` on the tool.
 - `seaglass search` output piped back into `seaglass memory store`: you would
   re-store what you just retrieved.
 
