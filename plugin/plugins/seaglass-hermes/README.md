@@ -4,7 +4,7 @@ A [Hermes](https://github.com/NousResearch/hermes-agent) plugin that brings your
 Seaglass memory into every Hermes session. It sits alongside whatever memory
 provider Hermes already runs (built-in, Honcho, Mem0) rather than replacing it.
 
-Verified against Hermes v0.21.4.
+Verified against Hermes v0.21.4, and installed live on v0.21.5.
 
 ## Install
 
