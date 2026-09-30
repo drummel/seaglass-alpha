@@ -4,7 +4,7 @@ Connects Claude to the Seaglass personal memory layer. Once installed, Claude au
 
 One plugin, `seaglass`, does the whole job. It bundles:
 
-- **The remote memory connector** — the plugin declares Seaglass's hosted MCP endpoint (`<server>/mcp`), and the host runs its own browser sign-in for it. No local process, no token to copy. This is the full agent-facing tool surface: starting a session (`start_session`, the first call of every session, which returns the user's profile, preferences and any setup step), reading (`search`), writing (`store_memory`, `store_document`), retiring/reclassifying (`update_memory`), reconsolidating (`reconsolidate_memory`), authoring and editing wiki pages (`create_page`, `edit_page`/`edit_section`, `append_section`, `revert_page`, `move_page`, `get_page_history`), and tracing back through past sessions (`transcript_search`, `transcript_read`).
+- **The remote memory connector** — the plugin declares Seaglass's hosted MCP endpoint (`<server>/mcp`), and the host runs its own browser sign-in for it. No local process, no token to copy. This is the full agent-facing tool surface: starting a session (`start_session`, the first call of every session, which returns the user's profile, preferences and any setup step), reading (`search`), writing (`store_memory`, `store_document`), retiring and redacting (`update_memory`), reconsolidating (`reconsolidate_memory`), authoring and editing wiki pages (`create_page`, `edit_page`/`edit_section`, `append_section`, `revert_page`, `move_page`, `get_page_history`), and tracing back through past sessions (`transcript_search`, `transcript_read`).
 - **The capture skill** (`seaglass-memory`) — teaches Claude when and how to read and write memories from conversation signals, how to author wiki pages in the house voice, how to correct what memory holds, and how to handle private content.
 - **The CLI skill** (`seaglass-cli`): it maps the same operations onto the `seaglass` CLI for shell-capable clients (the token-cheap path; see [Tools / commands](#tools--commands)). It loads when the session's transport is the CLI, or when the agent has a shell and no Seaglass tools.
 - **A `/seaglass:status` command** — reports whether this client is actually connected to Seaglass and, if not, the one step that connects it.
@@ -195,7 +195,7 @@ The connector and the CLI drive the same backend over the same operations. The c
 | `search` | `seaglass search` | Read — recall synthesized knowledge |
 | `store_memory` | `seaglass memory store` | Write a memory |
 | `store_document` | `seaglass document store` | Write a document |
-| `update_memory` | `seaglass memory update` | Retract / supersede / reclassify / redact a memory |
+| `update_memory` | `seaglass memory update` | Retract / supersede / redact a memory or document |
 | `reconsolidate_memory` | `seaglass reconsolidate` | Diagnose + resolve memory confusion |
 | `create_page` | `seaglass page create` | Register a wiki page |
 | `edit_page` / `edit_section` | `seaglass page edit` | Author / revise a page (whole or one section) |
