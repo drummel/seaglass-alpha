@@ -66,36 +66,52 @@ cite the memories and documents it rests on.
 
 ### House voice
 
-The same eight rules the synthesis worker follows
+The same eleven rules the synthesis worker follows
 (`synthesis/prompts/page.py::PAGE_SYNTHESIS_SYSTEM`), so the wiki reads as one
 voice whichever writer wrote which page:
 
-1. **Prose, not bullet lists.** A page reads like an encyclopedia entry about
-   someone the user actually knows.
+1. **Prose, not bullet lists.** A page reads like a reference entry on its
+   subject, for a reader who has never seen it, possibly someone it is shared
+   with.
 2. **Wrap every cross-link.** Link another page in double brackets, by its typed
    slug when you have it (`[[people/ada-example]]`), otherwise by its canonical
    name: `[[Ada Example]]`, not `[[Ada]]`.
 3. **Don't invent.** Every claim traces to a memory, a document, or something
    the user told you directly. When you cite, pass the ids you received as
    evidence, so the audit trail shows what the edit rests on.
-4. **Surface contradictions.** When sources disagree, say so plainly ("Two notes
-   disagree about X: one says A, another says B") rather than picking a side.
-5. **End with a "See also" list** of pages worth reading next: co-mentioned
-   people, parent topics, recent projects. Only pages that genuinely relate,
-   drawn from your sources or pages you actually found; pages the body already
-   links count as found. When nothing does, omit
-   the section: an empty See also beats an invented one, and an example slug from
-   these instructions is never a real entry.
+4. **Surface contradictions, in the subject's terms.** When sources disagree,
+   say what is unsettled ("The launch date is unsettled: Q3 or Q4") rather than
+   picking a side, and never describe the sources.
+5. **Leave the page chrome out of the body.** The page already shows its title,
+   sub-pages, a See also list (built from the pages the body links) and its
+   sources, so the body has no heading repeating the title, no list of
+   sub-pages and no See also section. Link related pages where the prose
+   mentions them.
 6. **Keep the one-line summary tight and indexable.** It shows up in outlines,
    search results, and the parent page's list of sub-pages.
 7. **No em dashes.** Use a comma, colon, or period instead. The long dash never
    belongs in a page body, a one-line summary, or an edit summary you author.
 8. **Keep the source's own words for when something happened.** If the user said
    "last week" or "end of Q3", write that, never an anchored calendar date you
-   worked out from it. A body sentence reads as a recorded claim, so a day nobody
-   stated is a fact you invented. Where the date of the record matters,
-   attribute it to the record beside the claim ("recorded 2026-07-23"), not
-   inside the sentence as part of what was asserted.
+   worked out from it. A body sentence reads as a stated claim, so a day nobody
+   stated is a fact you invented. Where it matters when the fact was known, put
+   that date beside the claim as a dateline ("as of 2026-07-23"), not inside the
+   sentence as part of what was asserted.
+9. **Open with a lede.** Before any heading, a paragraph tells a newcomer what
+   the subject is, why it matters and where it stands now, going beyond the
+   one-line summary.
+10. **Organize by aspect, not by date.** Sections follow what the page's
+   collection description says a page of its kind records (for a project: its
+   purpose, how it works, its decisions and why), most important first. The
+   description is in the map of your libraries or the `seaglass://libraries`
+   resource; take only the aspects it names, not its filing instructions. With
+   no description, use the subject's own natural aspects. Keep a dated log only
+   where the collection asks for dated entries. Minor details (settings,
+   identifiers, one-off incidents) get little room.
+11. **Never describe how the page was made.** The body never mentions the
+   sessions, captures, memories or notes it was written from, sources agreeing
+   or disagreeing, or synthesis, and never says "the sources don't say". A
+   subject that is itself about memory or sessions is described like any other.
 
 ### Write what the sources support
 
@@ -115,8 +131,9 @@ guess is a fabrication with good posture.
 
 Split a sub-page off when one part of a page has become a subject of its own. The
 sub-page's slug extends its parent's (`projects/project-example/pricing`
-under `projects/project-example`), and the parent stays the overview: it summarizes each
-sub-page in a sentence or two and links it, rather than repeating it. Before
+under `projects/project-example`), and the parent stays the overview: it leaves each
+sub-page's detail to the sub-page, never lists its sub-pages (the page tree does),
+and links a sub-page in the prose where the overview touches its subject. Before
 creating one, read the parent with `search` and `body: false` to confirm it
 exists and learn its exact slug.
 
