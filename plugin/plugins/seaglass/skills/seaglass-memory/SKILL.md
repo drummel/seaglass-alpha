@@ -72,7 +72,8 @@ voice whichever writer wrote which page:
 
 1. **Prose, not bullet lists.** A page reads like a reference entry on its
    subject, for a reader who has never seen it, possibly someone it is shared
-   with.
+   with. Explain or leave out internal identifiers, code names, file paths and
+   jargon that reader would not know.
 2. **Wrap every cross-link.** Link another page in double brackets, by its typed
    slug when you have it (`[[people/ada-example]]`), otherwise by its canonical
    name: `[[Ada Example]]`, not `[[Ada]]`.
@@ -109,9 +110,10 @@ voice whichever writer wrote which page:
    where the collection asks for dated entries. Minor details (settings,
    identifiers, one-off incidents) get little room.
 11. **Never describe how the page was made.** The body never mentions the
-   sessions, captures, memories or notes it was written from, sources agreeing
-   or disagreeing, or synthesis, and never says "the sources don't say". A
-   subject that is itself about memory or sessions is described like any other.
+   sessions, captures, memories, notes or documents it was written from,
+   sources agreeing or disagreeing, or synthesis, and never says what is or is
+   not recorded ("not recorded", "documented only by"). A subject that is
+   itself about memory or sessions is described like any other.
 
 ### Write what the sources support
 
