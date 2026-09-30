@@ -247,6 +247,10 @@ seaglass page append "Ada Example" --library - --heading "Working style" --conte
 seaglass page history "Ada Example" --json
 seaglass page revert "Ada Example" --library - --to-version 3 --json
 seaglass page move "projects/project-example" "projects/project-example-v2" --library - --json
+
+# A search result's offer_subpage_split step names a sub-page Seaglass proposes.
+# Ask the user, then record the answer (accept or decline) with its proposal_id.
+seaglass page answer-proposal subp_01HX... --answer accept --json
 ```
 
 `--evidence` is repeatable and is the `evidence_memory_ids` /
