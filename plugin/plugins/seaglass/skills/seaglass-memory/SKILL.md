@@ -73,7 +73,9 @@ voice whichever writer wrote which page:
 1. **Prose, not bullet lists.** A page reads like a reference entry on its
    subject, for a reader who has never seen it, possibly someone it is shared
    with. Explain or leave out internal identifiers, code names, file paths and
-   jargon that reader would not know.
+   jargon that reader would not know. A table is the exception: use one where
+   the reader compares several things on the same attributes (options,
+   versions, plans), with prose around it saying what the comparison shows.
 2. **Wrap every cross-link.** Link another page in double brackets, by its typed
    slug when you have it (`[[people/ada-example]]`), otherwise by its canonical
    name: `[[Ada Example]]`, not `[[Ada]]`.
