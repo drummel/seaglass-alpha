@@ -73,12 +73,21 @@ voice whichever writer wrote which page:
 1. **Prose, not bullet lists.** A page reads like a reference entry on its
    subject, for a reader who has never seen it, possibly someone it is shared
    with. Explain or leave out internal identifiers, code names, file paths and
-   jargon that reader would not know. A table is the exception: use one where
-   the reader compares several things on the same attributes (options,
-   versions, plans), with prose around it saying what the comparison shows.
+   jargon that reader would not know. The first time the body uses a term a
+   newcomer would not know (a tool, a protocol, an acronym, an internal name),
+   say in a few words what it is, from what the sources say about it, in that
+   same sentence; a link alone does not explain it. A term the sources don't
+   explain is left out or described by what it does in them. A table is the
+   exception to prose: use one where the reader compares several things on the
+   same attributes (options, versions, plans), with prose around it saying what
+   the comparison shows.
 2. **Wrap every cross-link.** Link another page in double brackets, by its typed
    slug when you have it (`[[people/ada-example]]`), otherwise by its canonical
-   name: `[[Ada Example]]`, not `[[Ada]]`.
+   name: `[[Ada Example]]`, not `[[Ada]]`. Linking keeps the page on its
+   subject: when the page mentions a related subject that has a page of its
+   own, keep it to a sentence and its link and leave its detail to that page.
+   A sub-page gets an overview section instead (see When a page outgrows
+   itself).
 3. **Don't invent.** Every claim traces to a memory, a document, or something
    the user told you directly. When you cite, pass the ids you received as
    evidence, so the audit trail shows what the edit rests on.
@@ -89,9 +98,10 @@ voice whichever writer wrote which page:
    sub-pages, a See also list (built from the pages the body links) and its
    sources, so the body has no heading repeating the title, no list of
    sub-pages and no See also section. Link related pages where the prose
-   mentions them.
+   mentions them. A page with sub-pages gives each one a short overview
+   section (see When a page outgrows itself), which is not a list.
 6. **Keep the one-line summary tight and indexable.** It shows up in outlines,
-   search results, and the parent page's list of sub-pages.
+   search results, and the page tree's list of sub-pages.
 7. **No em dashes.** Use a comma, colon, or period instead. The long dash never
    belongs in a page body, a one-line summary, or an edit summary you author.
 8. **Keep the source's own words for when something happened.** If the user said
@@ -108,14 +118,21 @@ voice whichever writer wrote which page:
    purpose, how it works, its decisions and why), most important first. The
    description is in the map of your libraries or the `seaglass://libraries`
    resource; take only the aspects it names, not its filing instructions. With
-   no description, use the subject's own natural aspects. Keep a dated log only
-   where the collection asks for dated entries. Minor details (settings,
-   identifiers, one-off incidents) get little room.
+   no description, use the subject's own natural aspects. Write a section only
+   for an aspect the sources say something about; one they don't cover gets no
+   heading and no mention (a sub-page still gets its overview section, below).
+   Keep a dated log only where the collection asks for
+   dated entries. The lede and first sections carry what the subject is, why
+   it matters and its main decisions; commands, settings, versions and file
+   paths come after them and get little room, and one-off incidents and
+   cosmetic changes get a sentence at most.
 11. **Never describe how the page was made.** The body never mentions the
    sessions, captures, memories, notes or documents it was written from,
    sources agreeing or disagreeing, or synthesis, and never says what is or is
-   not recorded ("not recorded", "documented only by"). A subject that is
-   itself about memory or sessions is described like any other.
+   not recorded ("not recorded", "documented only by"), and never points out
+   what the page lacks ("not yet filled in", "no trigger has been stated"). A
+   subject that is itself about memory or sessions is described like any
+   other.
 
 ### Write what the sources support
 
@@ -136,8 +153,15 @@ guess is a fabrication with good posture.
 Split a sub-page off when one part of a page has become a subject of its own. The
 sub-page's slug extends its parent's (`projects/project-example/pricing`
 under `projects/project-example`), and the parent stays the overview: it leaves each
-sub-page's detail to the sub-page, never lists its sub-pages (the page tree does),
-and links a sub-page in the prose where the overview touches its subject. Before
+sub-page's detail to the sub-page and never lists its sub-pages (the page tree
+does). Each sub-page gets a short overview section headed with its title, standing
+where the aspect it covers would go: two to four sentences on what that part is,
+where it stands when your sources say so (with a dateline only when they date
+it), and what the sub-page covers, with the link. A sub-page's one-line summary
+tells you what it covers; it is not a source for claims about it. When you have
+nothing on a sub-page, its section is a sentence and the link. Lists, commands,
+versions and step-by-step history stay on the sub-page, where they won't go
+stale. Before
 creating one, read the parent with `search` and `body: false` to confirm it
 exists and learn its exact slug.
 
