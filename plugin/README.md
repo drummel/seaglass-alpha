@@ -203,7 +203,6 @@ The connector and the CLI drive the same backend over the same operations. The c
 | `revert_page` | `seaglass page revert` | Roll a page back to an earlier version |
 | `get_page_history` | `seaglass page history` | Read a page's edit history |
 | `move_page` | `seaglass page move` | Rename / move a page to a new typed slug |
-| `answer_subpage_proposal` | `seaglass page answer-proposal` | Accept or decline a sub-page Seaglass proposed, after asking the user |
 | `send_seaglass_product_feedback` | `seaglass send-product-feedback` | Send feedback about Seaglass itself |
 
 **MCP/agent-only — no CLI command, by design:** the transcript-recall tools
