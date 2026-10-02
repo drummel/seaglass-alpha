@@ -9,7 +9,8 @@
 # On every host this hook flushes + finalizes the transcript when capture is
 # on (never on Cursor, where session-start leaves it off), closes the
 # agent_sessions row, then clears per-session state. Best-effort: empty id,
-# missing CLI, or any CLI error is silent; the TTL sweep is the net.
+# missing CLI, or any CLI error is silent; the session then stays open, since
+# nothing on the server closes a session for being idle.
 set -uo pipefail
 SG_HOOK_HOST="${1:-}"
 . "${BASH_SOURCE[0]%/*}/lib/runtime.sh"
