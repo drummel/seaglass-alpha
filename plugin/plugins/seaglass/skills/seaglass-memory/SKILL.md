@@ -70,17 +70,26 @@ The same eleven rules the synthesis worker follows
 (`synthesis/prompts/page.py::PAGE_SYNTHESIS_SYSTEM`), so the wiki reads as one
 voice whichever writer wrote which page:
 
-1. **Prose, not bullet lists.** A page reads like a reference entry on its
+1. **Write for readability.** A page reads like a reference entry on its
    subject, for a reader who has never seen it, possibly someone it is shared
-   with. Explain or leave out internal identifiers, code names, file paths and
-   jargon that reader would not know. The first time the body uses a term a
+   with. Use the form that reads most clearly, not the one the facts arrived
+   in:
+   - prose to explain what something is and why;
+   - a numbered list for steps a reader follows in order, one step per item:
+     a release done in four steps is a four-item list;
+   - a list for options or several parallel points;
+   - a table when several things are compared on the same attributes: three
+     plans by price, seats and support are one row per plan and one column
+     per attribute.
+
+   Steps or a comparison the user gave you as sentences still become a list or
+   a table. A list is never a dump of loose facts: each item is a complete
+   thought, introduced by a sentence that says what it lists. Explain or leave out internal identifiers, code names, file
+   paths and jargon that reader would not know. The first time the body uses a term a
    newcomer would not know (a tool, a protocol, an acronym, an internal name),
    say in a few words what it is, from what the sources say about it, in that
    same sentence; a link alone does not explain it. A term the sources don't
-   explain is left out or described by what it does in them. A table is the
-   exception to prose: use one where the reader compares several things on the
-   same attributes (options, versions, plans), with prose around it saying what
-   the comparison shows.
+   explain is left out or described by what it does in them.
 2. **Wrap every cross-link.** Link another page in double brackets, by its typed
    slug when you have it (`[[people/ada-example]]`), otherwise by its canonical
    name: `[[Ada Example]]`, not `[[Ada]]`. Linking keeps the page on its
@@ -124,8 +133,8 @@ voice whichever writer wrote which page:
    Keep a dated log only where the collection asks for
    dated entries. The lede and first sections carry what the subject is, why
    it matters and its main decisions; commands, settings, versions and file
-   paths come after them and get little room, and one-off incidents and
-   cosmetic changes get a sentence at most.
+   paths come after them and stay compact (several that share attributes fit
+   a table), and one-off incidents and cosmetic changes get a sentence at most.
 11. **Never describe how the page was made.** The body never mentions the
    sessions, captures, memories, notes or documents it was written from,
    sources agreeing or disagreeing, or synthesis, and never says what is or is
@@ -133,6 +142,21 @@ voice whichever writer wrote which page:
    what the page lacks ("not yet filled in", "no trigger has been stated"). A
    subject that is itself about memory or sessions is described like any
    other.
+
+### What renders
+
+- Sections are `##` and `###` headings at the start of a line. `edit_section`
+  addresses one by its heading; `append_section` adds a new one at the end.
+- Lists, tables, code fences with a language tag (```` ```python ````) and
+  `[text](https://…)` links render. Code, and commands a reader runs one after
+  another where every step is a command, go in one fence tagged with its
+  language (```` ```bash ````, never a bare ```` ``` ````), which gets a label
+  and syntax colors; a short note on a step goes beside the block, not between
+  its lines. When some step is an action with no command given (clone the
+  repo, open the settings page), the steps are a numbered list, each command
+  inline in its step.
+- Footnotes, task-list checkboxes, callouts and HTML show as literal text, and
+  an image shows only as a link to it, so leave them out.
 
 ### Write what the sources support
 
