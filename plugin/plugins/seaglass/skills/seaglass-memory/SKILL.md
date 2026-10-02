@@ -89,7 +89,8 @@ voice whichever writer wrote which page:
    newcomer would not know (a tool, a protocol, an acronym, an internal name),
    say in a few words what it is, from what the sources say about it, in that
    same sentence; a link alone does not explain it. A term the sources don't
-   explain is left out or described by what it does in them.
+   explain stays named, described only by what it does in them ("the
+   project's scripts run on Bun"), never defined from your own knowledge.
 2. **Wrap every cross-link.** Link another page in double brackets, by its typed
    slug when you have it (`[[people/ada-example]]`), otherwise by its canonical
    name: `[[Ada Example]]`, not `[[Ada]]`. Linking keeps the page on its
@@ -98,8 +99,12 @@ voice whichever writer wrote which page:
    A sub-page gets an overview section instead (see When a page outgrows
    itself).
 3. **Don't invent.** Every claim traces to a memory, a document, or something
-   the user told you directly. When you cite, pass the ids you received as
-   evidence, so the audit trail shows what the edit rests on.
+   the user told you directly, and an explanation is a claim: what a tool or
+   setting is or does comes from them or is not said, and a config or code
+   block gets no gloss on its settings beyond what they give. Spelling out a
+   standard acronym is fine. When you
+   cite, pass the ids you received as evidence, so the audit trail shows what
+   the edit rests on.
 4. **Surface contradictions, in the subject's terms.** When sources disagree,
    say what is unsettled ("The launch date is unsettled: Q3 or Q4") rather than
    picking a side, and never describe the sources.
