@@ -8,9 +8,9 @@ One plugin, `seaglass`, does the whole job. It bundles:
 - **The capture skill** (`seaglass-memory`) — teaches Claude when and how to read and write memories from conversation signals, how to author wiki pages in the house voice, how to correct what memory holds, and how to handle private content.
 - **The CLI skill** (`seaglass-cli`): it maps the same operations onto the `seaglass` CLI for shell-capable clients (the token-cheap path; see [Tools / commands](#tools--commands)). It loads when the session's transport is the CLI, or when the agent has a shell and no Seaglass tools.
 - **A `/seaglass:status` command** — reports whether this client is actually connected to Seaglass and, if not, the one step that connects it.
-- **Session lifecycle hooks** (Claude Code, and any host that runs command hooks) — `SessionStart` states before the first turn whether the CLI or the tools are this session's transport: on the tools it tells the agent to call `start_session` first, and with a signed-in CLI it runs `seaglass session start` and injects what it prints (the profile and any setup step); `SessionEnd` closes the `sessions` row server-side. Hosts that ignore hooks fall back to the `/recall` and `/checkpoint` skills.
+- **Session lifecycle hooks** (Claude Code, and any host that runs command hooks) — `SessionStart` states before the first turn whether the CLI or the tools are this session's transport: on the tools it tells the agent to call `start_session` first, and with a signed-in CLI it runs `seaglass session start` and injects what it prints (the profile, the resume briefing and any setup step); `SessionEnd` closes the `sessions` row server-side. Hosts that ignore hooks fall back to the `/recall` and `/checkpoint` skills.
 
-The hooks shell out to the `seaglass` CLI, so the CLI is the plugin's second, optional prerequisite: without it the connector still works and the profile still arrives over MCP, but there is no automatic profile injection, transcript capture, or resume briefing.
+The hooks shell out to the `seaglass` CLI, so the CLI is the plugin's second, optional prerequisite: without it the connector still works and the profile and resume briefing still arrive over MCP through `start_session`, but there is no automatic profile injection or transcript capture.
 
 **Just want the connector?** You do not need the plugin at all. Add your Seaglass server's connector URL (`<server>/mcp`) as a custom connector in claude.ai, Claude Desktop, Cowork, Cursor, or Claude Code, approve in the browser, and `search` works. The Connections page in the Seaglass web app has one-click buttons and copyable recipes for every client.
 
@@ -164,7 +164,7 @@ Then connect: open Cursor Settings, Tools & MCP, and click **Connect** next to `
 
 The plugin registers its own `seaglass` server. If you already added Seaglass with the web app's **Add to Cursor** button, remove one of the two entries in Tools & MCP, or the agent sees every tool twice.
 
-Cursor runs `sessionStart` and `sessionEnd` through `bash`, so the hooks need a `bash` on `PATH` (Windows without one skips them; the rule and the connector still work). Transcript capture and the resume briefing are not wired up for Cursor yet.
+Cursor runs `sessionStart` and `sessionEnd` through `bash`, so the hooks need a `bash` on `PATH` (Windows without one skips them; the rule and the connector still work). Transcript capture is not wired up for Cursor yet.
 
 ## Verifying the connection
 

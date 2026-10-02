@@ -6,8 +6,8 @@
 #
 # Persists per-session state under the plugin data dir, pins CLI/stdio write
 # attribution on Claude, and states the session's transport as model-visible
-# SessionStart context: a signed-in CLI means CLI mode (the transport line, the
-# profile and the resume briefing); anything else means the Seaglass tools, with a
+# SessionStart context: a signed-in CLI means CLI mode (the transport line, and
+# what `seaglass session start` prints: the profile and the resume briefing); anything else means the Seaglass tools, with a
 # pointer to start_session and, once ever, the CLI install offer. It
 # never blocks the session.
 set -uo pipefail
@@ -93,8 +93,7 @@ ORIENT="Seaglass is on its tools in this session. Call its \`start_session\` too
 # CLI branch below would contradict that rule, and Cursor has no env file to
 # carry the session id to the agent's own CLI calls, so their writes would land
 # outside the session this hook started. The CLI offer is not made here either:
-# what it adds on other hosts (transcript capture, the resume briefing) is not
-# wired up for Cursor.
+# what it adds on other hosts (transcript capture) is not wired up for Cursor.
 if sg_is_cursor_host; then
     emit "$ORIENT"
     exit 0
@@ -111,7 +110,7 @@ if ! command -v seaglass >/dev/null 2>&1; then
     sg_flag_set cli-offer-made
     emit "$ORIENT
 
-The \`seaglass\` CLI is not installed here. It adds transcript capture and the resume briefing, and it drives the same memory from a shell for less context per call. Offer it once, only if the work makes it relevant: ${INSTALL_HINT}, then \`seaglass auth login\`. This is the only time it is mentioned."
+The \`seaglass\` CLI is not installed here. It adds transcript capture, and it drives the same memory from a shell for less context per call. Offer it once, only if the work makes it relevant: ${INSTALL_HINT}, then \`seaglass auth login\`. This is the only time it is mentioned."
     exit 0
 fi
 
@@ -120,15 +119,16 @@ fi
 if ! seaglass auth status >/dev/null 2>&1; then
     emit "$ORIENT
 
-The \`seaglass\` CLI is installed but not signed in, so transcript capture and the resume briefing are off. If the user wants them, offer once to run \`seaglass auth login\` for them: it opens a browser and waits for their approval, and the token then caches at ~/.config/seaglass/token."
+The \`seaglass\` CLI is installed but not signed in, so transcript capture is off. If the user wants it, offer once to run \`seaglass auth login\` for them: it opens a browser and waits for their approval, and the token then caches at ~/.config/seaglass/token."
     exit 0
 fi
 
 # CLI mode: a signed-in CLI is the transport for this session.
 TRANSPORT="The \`seaglass\` CLI is signed in here, so it is the transport for this session: run the Seaglass operations as \`seaglass\` commands, as the \`seaglass-cli\` skill spells them."
 
-# The CLI's start_session: the profile, the preferences and any setup step, and
-# the server records that this session started.
+# The CLI's start_session: the profile, the preferences, any setup step and the
+# resume briefing of what this agent's other chats captured, and the server
+# records that this session started.
 PROFILE="$(sg_with_timeout 10 seaglass session start 2>/dev/null || true)"
 if [[ -z "$PROFILE" ]]; then
     emit "$TRANSPORT
@@ -137,22 +137,6 @@ Seaglass returned no profile content. The user can run \`seaglass auth status\` 
     exit 0
 fi
 PROFILE_LEAD="Your Seaglass session, started for you with \`seaglass session start\` (run it again only for a refresh):"
-
-# Resume briefing: append a digest of this agent's previous session so the
-# conversation starts with continuity. Best-effort and deterministic (no LLM);
-# empty when there's no prior session worth summarizing, in which case we emit
-# the profile alone.
-BRIEFING="$(sg_with_timeout 10 seaglass session briefing 2>/dev/null || true)"
-if [[ -n "$BRIEFING" ]]; then
-    emit "$TRANSPORT
-
-$PROFILE_LEAD
-
-$PROFILE
-
-$BRIEFING"
-    exit 0
-fi
 
 emit "$TRANSPORT
 

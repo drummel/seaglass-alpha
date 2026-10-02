@@ -104,7 +104,7 @@ print(data.get(sys.argv[1]) or "")
 # to running the command unbounded keeps the hook working there: the CLI
 # calls it wraps are short and have their own network timeouts, and the
 # alternative (every call failing) silently turned off transcript capture and
-# the resume briefing for every Mac user.
+# the CLI-mode session start for every Mac user.
 # Usage: sg_with_timeout <seconds> <command> [args...]
 sg_with_timeout() {
     local secs="$1"
