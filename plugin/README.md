@@ -136,7 +136,7 @@ The same plugin installs on ChatGPT/Codex from its plugin surface. One repo ship
 2. **Trust the hooks.** Installing a plugin does not trust its executable hooks. Open `/hooks`, review the Seaglass session hooks, and trust them, otherwise they stay skipped.
 3. **Authenticate the connector** the first time a memory tool is used: run `codex mcp login seaglass-stg` (or click Authenticate) and approve in the browser. The token is managed by Codex; no token lives in any config file.
 
-Hooks fire on Codex's `SessionStart`, `SessionEnd`, `Stop`, and `PreCompact` — both manifests point at the same `hooks/hooks.json`, which declares all four. A session that dies without its `SessionEnd` hook running is finalized by the server-side TTL sweep as a backstop. Install the CLI (`curl -fsSL https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh | bash`) and authenticate it (`seaglass auth login`) for the hooks and the shell path, exactly as on Claude Code.
+Hooks fire on Codex's `SessionStart`, `SessionEnd`, `Stop`, and `PreCompact` — both manifests point at the same `hooks/hooks.json`, which declares all four. A session that dies without its `SessionEnd` hook running stays open on the server; nothing closes a session for being idle. Install the CLI (`curl -fsSL https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh | bash`) and authenticate it (`seaglass auth login`) for the hooks and the shell path, exactly as on Claude Code.
 
 ### Degraded mode
 
