@@ -10,8 +10,8 @@ through the `seaglass-stg` MCP server this plugin ships
 (Antigravity may list it as
 `seaglass-stg_seaglass-stg`).
 Before your first reply in each conversation, call its `start_session` tool
-without announcing it, and work from what it returns: the rules for reading and
-writing memory, and the user's preferences.
+without announcing it. What it returns (how to read and write Seaglass memory,
+and this user's preferences) is what you work from.
 
 If the Seaglass tools are missing, or a call comes back unauthenticated, the
 user signs in again from the `/mcp` panel: pick the Seaglass server, choose
