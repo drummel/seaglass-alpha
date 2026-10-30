@@ -45,10 +45,10 @@ it, say so and give the user the line to run.
 | The decision the skill calls for | The command line it is here |
 |---|---|
 | Read: recall, "what do we know about X" | `seaglass search "X" --json` |
-| Write a fact | `seaglass memory store --library <slug> --page ... --content "..." --json` |
-| Write a document | `seaglass document store --library <slug> ... --json` |
+| Write a fact | `seaglass memory store --page ... --content "..." --json`, with `--library` when you can write to more than one library |
+| Write a document | `seaglass document store ... --json`, with `--library` the same way |
 | Correct or supersede a fact | `seaglass memory update ... --json` |
-| Author or edit a page | `seaglass page create` / `edit` / `append`, each with `--library <slug>` |
+| Author or edit a page | `seaglass page create` / `edit` / `append` |
 
 The skill decides *whether* an operation is called for and *what* goes in it;
 this table only says what it looks like once it is. The rest of this skill
@@ -119,8 +119,12 @@ seaglass search "<query>" --json
 seaglass search "Ada Example" --type people --limit 5 --json
 seaglass search "projects/project-example" --json      # typed slug: exact page
 seaglass search "<query>" --no-body --json              # skeleton only: outline, no body
-seaglass search "<query>" --library - --after 2026-04-01T00:00:00Z --json   # one library, a time window
+seaglass search "<query>" --account example-corp --json                    # one account you are connected to
+seaglass search "<query>" --library example-corp/plans --after 2026-04-01T00:00:00Z --json   # one library, a time window
 ```
+
+Every hit names its `account` (a handle and a display name) and its
+`library`, in the form `--library` takes back.
 
 Inspect the JSON `mode`:
 
@@ -136,7 +140,8 @@ Inspect the JSON `mode`:
 - `resolution_required` (exit code 4): render
   `suggested_clarification_question` to the user and wait for their answer
   before retrying with the disambiguated `id` from `results`.
-- `no_match` (exit code 3): say so; do not fabricate.
+- `no_match` (exit code 3): nothing is on record. Answering the user, say so
+  and do not fabricate; searching before a write, go on and run the write.
 
 Fetched pages, documents and memories carry any attached annotations inline
 under `annotations: [{id, content}]`.
@@ -144,7 +149,7 @@ under `annotations: [{id, content}]`.
 ## Write a memory: `seaglass memory store`
 
 ```bash
-seaglass memory store --library - \
+seaglass memory store --library "<library>" \
   --page "Ada Example" --type people \
   --content "Ada is leading the Q3 launch on Project Example." \
   --link-projects "Project Example" --link-topics "Q3 launch" \
@@ -152,11 +157,15 @@ seaglass memory store --library - \
   --json
 ```
 
-- `--library` is the `library` argument, required on every write: the slug of
-  the library the write belongs in, from the map `seaglass me` prints (`-` is
-  the account's main library). Pick the library whose collections describe
-  what you are writing; a new page is created there, and `--page` is looked up
-  only there.
+- `--library` is the `library` argument: the library the write belongs in, by
+  its slug from the map `seaglass session start` prints, or `handle/slug` when
+  that map names libraries that way. Pick the library whose collections
+  describe what you are writing; a new page is created there, and `--page` is
+  looked up only there. When what you are writing could belong in more than
+  one library or account on that map, ask the user which before you run the
+  write (core rule 13). Leave it out only when you can write to a single
+  library: with more than one, the write exits 2 and names them, and you ask
+  the user which one before rerunning with `--library`.
 - `--content` (or `--stdin`, or `--file`) is the `content` argument.
 - `--source-kind` fills `source_origin`; it defaults to `conversation`, so
   pass it only for another origin (`paste` for text the user pasted).
@@ -181,9 +190,9 @@ seaglass memory store --library - \
 ## Write a document: `seaglass document store`
 
 ```bash
-seaglass document store --library - --file ./notes.md --page "<name>" --type projects --json
-echo "<paste body>" | seaglass document store --library - --title "Q3 standup" --stdin --source-kind paste --page "Q3 launch" --type projects --json
-seaglass document store --library - --file ./long-transcript.md --via-upload --page "Q3 standup" --type projects --json
+seaglass document store --library "<library>" --file ./notes.md --page "<name>" --type projects --json
+echo "<paste body>" | seaglass document store --library "<library>" --title "Q3 standup" --stdin --source-kind paste --page "Q3 launch" --type projects --json
+seaglass document store --library "<library>" --file ./long-transcript.md --via-upload --page "Q3 standup" --type projects --json
 ```
 
 `--via-upload` POSTs the body through the upload endpoint instead of the
@@ -201,7 +210,7 @@ web pages and transcripts where the mtime means nothing.
 ```bash
 seaglass annotate document_01HX... \
   "User clarified that this spec was the one Ada objected to in the budget discussion." \
-  --library - --page "Project Example" --json
+  --library "<library>" --page "Project Example" --json
 ```
 
 Attaches post-hoc context to an existing `document_*` or `memory_*`; the
@@ -232,23 +241,27 @@ retract-then-store, exactly as with the `supersedes` argument.
 
 ```bash
 # Register a page without writing a memory about it
-seaglass page create --library - --type projects --title "Project Example" --json
-seaglass page create --library - --type people --title "Ada Example" --identity-hint "Example Corp PM" --json
+seaglass page create --library "<library>" --type projects --title "Project Example" --json
+seaglass page create --library "<library>" --type people --title "Ada Example" --identity-hint "Example Corp PM" --json
 
 # Author or revise one section, citing the captures that justify it.
-# Omit --base-version and `page edit` fetches the current version for you.
-seaglass page edit "Ada Example" --library - \
+# --base-version is the `version:` line of `seaglass search "Ada Example"` or
+# `page create`, or the `→ vN` your previous edit of the page printed.
+seaglass page edit "Ada Example" --base-version 3 \
   --section "Current role" \
   --content "Staff designer at [[Example Corp]], a role she started last month." \
   --evidence memory_01HX... --evidence document_01HX... \
   --edit-summary "job change" --json
 
-seaglass page append "Ada Example" --library - --heading "Working style" --content "Prefers async reviews over meetings." --json
+seaglass page append "Ada Example" --heading "Working style" --content "Prefers async reviews over meetings." --json
 seaglass page history "Ada Example" --json
-seaglass page revert "Ada Example" --library - --to-version 3 --json
-seaglass page move "projects/project-example" "projects/project-example-v2" --library - --json
+seaglass page revert "Ada Example" --to-version 3 --json
+seaglass page move "projects/project-example" "projects/project-example-v2" --json
 ```
 
+Without `--library`, `edit`, `append`, `revert` and `move` look the page up in
+every library you can write to; a name in more than one exits 2 with those
+libraries, and you ask the user which, then rerun with `--library`.
 `--evidence` is repeatable and is the `evidence_memory_ids` /
 `evidence_document_ids` pair. A `VERSION_CONFLICT` prints the current version
 and excerpt: re-read and re-apply. `page edit` and friends follow the same mode
@@ -299,8 +312,8 @@ response carries the same `receipt` the tools return.
 |---|---|---|
 | 0 | success | continue |
 | 1 | generic failure (a changed command will not fix it) | read stderr; an HTTP 5xx is retried once (core rule 8), nothing else is |
-| 2 | usage error: the command line is wrong (a flag missing, unknown, or with a bad value; a `--type` to add; a heading the page lacks; a library you cannot use), and stderr names the fix | fix the command as stderr says (`seaglass <cmd> --help`), rerun once |
-| 3 | not found (`search` returned `no_match`, or a named page or resource does not exist) | tell the user honestly; do not fabricate |
+| 2 | usage error: the command line is wrong (a flag missing, unknown, or with a bad value; a `--type` to add; a heading the page lacks; a `--library` to name, or one you cannot use), and stderr names the fix | fix the command as stderr says (`seaglass <cmd> --help`), rerun once |
+| 3 | not found (`search` returned `no_match`, or a named page or resource does not exist) | answering the user, tell them honestly and do not fabricate; searching before a write, run the write; a write that exits 3 failed, so say so first |
 | 4 | resolution required (ambiguous page reference) | ask the user the clarification question shown in stderr / `--json` data |
 | 5 | auth failure (token missing, revoked, or invalid) | With the Seaglass MCP tools connected: call the cli_handoff tool, then run `seaglass auth redeem <code>` with the code it returns. Without them: run `seaglass auth login`, which opens a browser for the user to approve. Then rerun the failed command once. Never loop. |
 

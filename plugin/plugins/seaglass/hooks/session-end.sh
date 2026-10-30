@@ -1,7 +1,8 @@
 #!/bin/bash
 # SessionEnd hook for the seaglass plugin. Claude Code, Codex (which reads the
-# same hooks.json), and Cursor (whose hooks file passes `cursor` as the first
-# argument).
+# same hooks.json), and Cursor and Gemini CLI (whose hooks files pass `cursor`
+# or `gemini` as the first argument). Gemini does not wait for SessionEnd, so
+# there this is best effort and AfterAgent's flush carries the transcript.
 #
 # Codex's Stop is turn-scope (it fires after every assistant response), so it
 # is never mapped to `session end`; Codex's own SessionEnd event runs this hook.
@@ -32,6 +33,8 @@ if [[ "${CAPTURE:-off}" == "on" ]]; then
     [[ -n "$REASON" ]] || REASON="other"
     TRANSCRIPT_PATH="$(sg_json_field "$INPUT_JSON" transcript_path)"
     FLUSH_ARGS=(--client-session-id "$SESSION_ID" --reason "$REASON")
+    FORMAT="$(sg_transcript_format)"
+    [[ -n "$FORMAT" ]] && FLUSH_ARGS+=(--format "$FORMAT")
     [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]] && FLUSH_ARGS+=(--path "$TRANSCRIPT_PATH")
     sg_with_timeout 15 seaglass session finalize-transcript "${FLUSH_ARGS[@]}" >/dev/null 2>&1 || true
 fi

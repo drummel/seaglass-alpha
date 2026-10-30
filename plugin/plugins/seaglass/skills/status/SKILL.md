@@ -49,15 +49,18 @@ Not connected. The Seaglass tools aren't in this session.
 <the one reconnect step for this client, from that section>
 ```
 
-**Connected**: lead with the confirmation, then the setup state. One or two
-lines is usually enough:
+**Connected**: lead with the confirmation, then the setup state exactly as
+`start_session`'s `setup_complete` gives it.
+
+- `setup_complete` is true: say setup is complete. One line is enough.
+- `setup_complete` is false: setup is not complete, so never say it is. Name
+  each step `start_session` returned, even an optional one such as installing
+  the CLI, and offer it rather than doing it: this skill runs no installer
+  (see what you must not do below). Do not list every possible remedy.
 
 ```
-Connected to Seaglass. Setup is complete.
+Connected to Seaglass. Setup is not complete: <the step or steps start_session named>.
 ```
-
-**Connected, setup unfinished**: name the one step `start_session` returned, and
-do it the way its result says to. Do not list every possible remedy.
 
 ## What the plugin does and does not provide
 

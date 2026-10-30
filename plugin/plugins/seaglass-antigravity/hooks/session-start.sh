@@ -1,0 +1,157 @@
+#!/bin/bash
+# SessionStart hook for the seaglass plugin. Host-neutral: runs under Claude
+# Code (CLAUDE_ENV_FILE / CLAUDE_PLUGIN_ROOT), ChatGPT/Codex (PLUGIN_ROOT /
+# PLUGIN_DATA), and Cursor, Gemini CLI and Antigravity, whose hooks files pass
+# `cursor`, `gemini` or `agy` as the first argument.
+#
+# Persists per-session state under the plugin data dir, pins CLI/stdio write
+# attribution on Claude, and states the session's transport as model-visible
+# SessionStart context: a signed-in CLI means CLI mode (the transport line, and
+# what `seaglass session start` prints: the profile and the resume briefing); anything else means the Seaglass tools, with a
+# pointer to start_session and, once ever, the CLI install offer. It
+# never blocks the session.
+set -uo pipefail
+SG_HOOK_HOST="${1:-}"
+. "${BASH_SOURCE[0]%/*}/lib/runtime.sh"
+
+# Emit SessionStart context in the host's native shape. It states only what this
+# hook alone knows (which transport is live, the one-time CLI offer, which call
+# opens the session); the date, the core rules and the preferences reach the
+# agent from the server, so each rule keeps one home and none is restated here.
+emit() {
+    local ctx="$1"
+    if sg_is_agy_host; then
+        # Antigravity parses hook output as strict protojson and discards a
+        # reply carrying any field it does not know, Claude's envelope
+        # included; context goes in as an injected step.
+        python3 -c 'import json,sys; print(json.dumps({"injectSteps":[{"ephemeralMessage":sys.argv[1]}]}))' "$ctx"
+    elif sg_is_cursor_host; then
+        # Cursor's sessionStart output: a flat additional_context field.
+        python3 -c 'import json,sys; print(json.dumps({"additional_context":sys.argv[1]}))' "$ctx"
+    elif sg_is_claude_host; then
+        # Claude Code's documented SessionStart output contract.
+        python3 -c 'import json,sys; print(json.dumps({"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":sys.argv[1]}}))' "$ctx"
+    else
+        # Gemini CLI documents this same envelope for SessionStart context.
+        # Codex also accepts model-visible SessionStart context; its exact
+        # envelope is unverified against the live docs, so emit the shared
+        # additionalContext shape and adjust this branch once confirmed.
+        python3 -c 'import json,sys; print(json.dumps({"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":sys.argv[1]}}))' "$ctx"
+    fi
+}
+
+INPUT_JSON="$(cat 2>/dev/null || true)"
+SESSION_ID="$(sg_session_id "$INPUT_JSON")"
+
+# Pin all this chat's writes to one agent_sessions row server-side. On Claude,
+# the writable CLAUDE_ENV_FILE carries SEAGLASS_CLIENT_SESSION_ID to the CLI +
+# stdio shim (forwarded as the x-seaglass-client-session header; the API
+# branches on it). Codex has no writable env file, so per-write CLI attribution
+# there is deferred (the MCP connector carries session identity server-side);
+# the id still lands in session state for the transcript hooks.
+sg_state_set "$SESSION_ID" client-session "$SESSION_ID"
+if [[ -n "$SESSION_ID" ]] && sg_is_claude_host; then
+    printf 'export SEAGLASS_CLIENT_SESSION_ID=%q\n' "$SESSION_ID" >>"$CLAUDE_ENV_FILE"
+fi
+# The env file reaches the agent's later commands, not this hook, so its own CLI
+# calls below need the id too: without it `seaglass session start` marked a
+# throwaway server session, and every write in the chat read as unstarted.
+if [[ -n "$SESSION_ID" ]]; then
+    export SEAGLASS_CLIENT_SESSION_ID="$SESSION_ID"
+fi
+
+# Resolve the transcript-capture opt-in once and pin it into per-session state
+# so the per-turn Stop/PreCompact hooks (AfterAgent on Gemini) no-op without a
+# network round trip. Default off on any failure. On Claude, also mirror to
+# CLAUDE_ENV_FILE (the original fast path); the state file is the cross-host
+# source of truth. Cursor and Antigravity stay off: their transcript formats
+# have not been checked against the upload, and their hooks files register no
+# per-turn flush. Gemini's uploads name its own format (sg_transcript_format).
+if sg_is_cursor_host || sg_is_agy_host; then
+    sg_state_set "$SESSION_ID" capture off
+elif command -v seaglass >/dev/null 2>&1; then
+    CAPTURE="$(sg_with_timeout 10 seaglass session transcript-config 2>/dev/null || echo off)"
+    [[ "$CAPTURE" == "on" ]] || CAPTURE="off"
+    sg_state_set "$SESSION_ID" capture "$CAPTURE"
+    if sg_is_claude_host; then
+        printf 'export SEAGLASS_TRANSCRIPT_CAPTURE=%s\n' "$CAPTURE" >>"$CLAUDE_ENV_FILE"
+    fi
+fi
+
+# The installer URL is filled in per distribution channel at publish time; an
+# unpublished (source) copy still holds the placeholder, so fall back to prose.
+INSTALL_URL="https://raw.githubusercontent.com/drummel/seaglass-alpha/main/cli/install.sh"
+# The whole "run ..." fragment is built here so the emit below does not have to
+# know whether it got a command (backticked) or prose (not).
+INSTALL_HINT="run \`curl -fsSL ${INSTALL_URL} | bash\`"
+[[ "$INSTALL_URL" == *"{{"* ]] && INSTALL_HINT="run the Seaglass CLI installer for this deployment"
+
+# MCP mode: the Seaglass tools are the path, and start_session is the first
+# call of every session: it returns who the user is, the preferences and custom instructions, the core
+# and the map of their libraries. The last sentence is there because recorded
+# replies opened by summarizing the profile back to the user, and one repeated a
+# private figure while doing it. "As you would have without the call" is there
+# because an agent-mode run read the profile, then took the user's stated fact
+# as background and captured nothing (2026-09-23).
+ORIENT="Seaglass is on its tools in this session. Call its \`start_session\` tool before anything else, without announcing it: it returns who the user is, their preferences and custom instructions, the rules for using Seaglass, and a map of the libraries and collections you can reach. Take it in quietly, then do what the user's message calls for, as you would have without the call: it is context for you, not news for them."
+
+# Cursor, Gemini CLI and Antigravity: the plugin or extension ships the
+# connector and its always-on context (Cursor's and Antigravity's rules,
+# Gemini's GEMINI.md) names start_session, so the tools are the transport
+# whatever the CLI's state. The CLI branch below would contradict that, and none
+# of these hosts has an env file to carry the session id to the agent's own CLI
+# calls, so their writes would land outside the session this hook started. No
+# CLI offer either: on Cursor and Antigravity what it adds (transcript capture)
+# is not wired up, and on Gemini the capture above already runs whenever a
+# signed-in CLI is present. On Antigravity this also keeps the hook's stdout to
+# the one JSON object its strict parser accepts.
+if sg_is_cursor_host || sg_is_gemini_host || sg_is_agy_host; then
+    emit "$ORIENT"
+    exit 0
+fi
+
+# No CLI: offer it once, ever, and record that the offer was made in the
+# plugin's data directory, which the host keeps across sessions. The transport
+# is detected here, on the machine, and stated to the agent rather than guessed.
+if ! command -v seaglass >/dev/null 2>&1; then
+    if sg_flag_get cli-offer-made; then
+        emit "$ORIENT"
+        exit 0
+    fi
+    sg_flag_set cli-offer-made
+    emit "$ORIENT
+
+The \`seaglass\` CLI is not installed here. It adds transcript capture, and it drives the same memory from a shell for less context per call. Offer it once, only if the work makes it relevant: ${INSTALL_HINT}, then \`seaglass auth login\`. This is the only time it is mentioned."
+    exit 0
+fi
+
+# CLI present but unauthed. The connector is a separate credential and may well
+# be working, so stay on the tools rather than block on a CLI sign-in.
+if ! seaglass auth status >/dev/null 2>&1; then
+    emit "$ORIENT
+
+The \`seaglass\` CLI is installed but not signed in, so transcript capture is off. If the user wants it, offer once to run \`seaglass auth login\` for them: it opens a browser and waits for their approval, and the token then caches at ~/.config/seaglass/token."
+    exit 0
+fi
+
+# CLI mode: a signed-in CLI is the transport for this session.
+TRANSPORT="The \`seaglass\` CLI is signed in here, so it is the transport for this session: run the Seaglass operations as \`seaglass\` commands, as the \`seaglass-cli\` skill spells them."
+
+# The CLI's start_session: the profile, the preferences, any setup step and the
+# resume briefing of what this agent's other chats captured, and the server
+# records that this session started.
+PROFILE="$(sg_with_timeout 10 seaglass session start 2>/dev/null || true)"
+if [[ -z "$PROFILE" ]]; then
+    emit "$TRANSPORT
+
+Seaglass returned no profile content. The user can run \`seaglass auth status\` to check token / deployment, then \`seaglass session start\` to verify."
+    exit 0
+fi
+PROFILE_LEAD="Your Seaglass session, started for you with \`seaglass session start\` (run it again only for a refresh):"
+
+emit "$TRANSPORT
+
+$PROFILE_LEAD
+
+$PROFILE"
+exit 0
