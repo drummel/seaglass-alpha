@@ -3,7 +3,7 @@
     "SessionStart": [
       {
         "type": "command",
-        "command": "d=.; [ -f hooks/session-start.sh ] || d=\"$HOME/.gemini/config/plugins/seaglass-stg\"; bash \"$d/hooks/session-start.sh\" agy",
+        "command": "d=\"$HOME/.gemini/config/plugins/seaglass-stg\"; [ -f \"$d/hooks/session-start.sh\" ] || { [ -f rules/seaglass.md ] && d=.; }; bash \"$d/hooks/session-start.sh\" agy",
         "timeout": 30
       }
     ]
