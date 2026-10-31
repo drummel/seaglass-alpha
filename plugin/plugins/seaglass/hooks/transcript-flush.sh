@@ -1,5 +1,6 @@
 #!/bin/bash
-# Stop / PreCompact hook for the seaglass plugin. Host-neutral.
+# Stop / PreCompact hook for the seaglass plugin, and AfterAgent on Gemini CLI,
+# whose extension passes `gemini` as the first argument. Host-neutral.
 #
 # Incrementally uploads the session transcript. Reads the transcript-capture
 # opt-in from the session env (Claude fast path) or per-session state (cross-host,
@@ -8,6 +9,7 @@
 # upload must never block the session; the next Stop catches up (server-confirmed
 # offsets make this safe).
 set -uo pipefail
+SG_HOOK_HOST="${1:-}"
 . "${BASH_SOURCE[0]%/*}/lib/runtime.sh"
 
 INPUT_JSON="$(cat 2>/dev/null || true)"
@@ -27,7 +29,8 @@ if ! command -v seaglass >/dev/null 2>&1; then
     exit 0
 fi
 
-sg_with_timeout 15 seaglass session upload-transcript \
-    --path "$TRANSCRIPT_PATH" \
-    --client-session-id "$SESSION_ID" >/dev/null 2>&1 || true
+UPLOAD_ARGS=(--path "$TRANSCRIPT_PATH" --client-session-id "$SESSION_ID")
+FORMAT="$(sg_transcript_format)"
+[[ -n "$FORMAT" ]] && UPLOAD_ARGS+=(--format "$FORMAT")
+sg_with_timeout 15 seaglass session upload-transcript "${UPLOAD_ARGS[@]}" >/dev/null 2>&1 || true
 exit 0

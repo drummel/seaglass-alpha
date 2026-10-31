@@ -29,7 +29,9 @@ to that topic.
 
 Leave out what the core rules skip, plus debugging chatter that never resolved
 and code the user didn't ask to keep. When a name is ambiguous (two people named
-Ada, an unclear project), ask before writing that item.
+Ada, an unclear project), or an item could belong in more than one library or
+account on your map, ask before writing that item. Ask about every such item in
+one question, then write them all.
 
 ## How to write each one
 
@@ -42,9 +44,10 @@ Ada, an unclear project), ask before writing that item.
    content does not, the preceding topic and why the user brought it up. Pass
    it when there is such context; a fact that stands alone needs none.
 
-   A whole write for Ada's role: `library` is `-`, the account's main
-   library (or the slug of the library the fact belongs in), and
-   `source_origin` has kind `conversation`, since the user said it here. Those
+   A whole write for Ada's role: `library` is the library the fact belongs
+   in, as your map names it (`-`, the account's main library, when your map
+   lists one account), and `source_origin` has kind `conversation`, since the
+   user said it here. Those
    two go on every write, with the `content`: "Ada Example confirmed as PM of
    Project Example at the April 15 kickoff. Previously CTO at Example Corp; the
    user noted this came up alongside her budget pushback the week before." The

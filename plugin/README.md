@@ -4,7 +4,7 @@ Connects Claude to the Seaglass personal memory layer. Once installed, Claude au
 
 One plugin, `seaglass`, does the whole job. It bundles:
 
-- **The remote memory connector** — the plugin declares Seaglass's hosted MCP endpoint (`<server>/mcp`), and the host runs its own browser sign-in for it. No local process, no token to copy. This is the full agent-facing tool surface: starting a session (`start_session`, the first call of every session, which returns the user's profile, preferences and any setup step), reading (`search`), writing (`store_memory`, `store_document`), retiring and redacting (`update_memory`), reconsolidating (`reconsolidate_memory`), authoring and editing wiki pages (`create_page`, `edit_page`/`edit_section`, `append_section`, `revert_page`, `move_page`, `get_page_history`), and tracing back through past sessions (`transcript_search`, `transcript_read`).
+- **The remote memory connector** — the plugin declares Seaglass's hosted MCP endpoint (`<server>/mcp`), and the host runs its own browser sign-in for it. No local process, no token to copy. This is the full agent-facing tool surface: starting a session (`start_session`, the first call of every session, which returns the user's profile, preferences and any setup step), reading (`search`), writing (`store_memory`, `store_document`), retiring and redacting (`update_memory`), reconsolidating (`reconsolidate_memory`), authoring and editing wiki pages (`create_page`, `edit_page`/`edit_section`, `append_section`, `revert_page`, `move_page`, `get_page_history`), and tracing back through past sessions (`search_sessions`, `read_session`).
 - **The capture skill** (`seaglass-memory`) — teaches Claude when and how to read and write memories from conversation signals, how to author wiki pages in the house voice, how to correct what memory holds, and how to handle private content.
 - **The CLI skill** (`seaglass-cli`): it maps the same operations onto the `seaglass` CLI for shell-capable clients (the token-cheap path; see [Tools / commands](#tools--commands)). It loads when the session's transport is the CLI, or when the agent has a shell and no Seaglass tools.
 - **A `/seaglass:status` command** — reports whether this client is actually connected to Seaglass and, if not, the one step that connects it.
@@ -183,7 +183,7 @@ If `seaglass whoami` works but the hooks report the CLI missing, the most common
 
 ## Automation / CI
 
-For CI and other non-interactive contexts where `seaglass auth login` isn't viable, you can still mint a long-lived token from the admin UI's Connections page and inject it via `SEAGLASS_TOKEN`. The env var still wins over the cached file, so a CI runner exporting it gets the same behavior as an interactive shell that ran `seaglass auth login`. An agent that already has the MCP tools but no CLI token can call `cli_handoff` and redeem the code it returns with `seaglass auth redeem <code>`, no browser needed.
+For CI and other non-interactive contexts where `seaglass auth login` isn't viable, run `seaglass auth login` once on a machine with a browser and inject the token it saves (`~/.config/seaglass/token`) into the runner as `SEAGLASS_TOKEN`. A device-link token does not expire and no web page revokes one yet, so treat it as a long-lived secret. The env var still wins over the cached file, so a CI runner exporting it gets the same behavior as an interactive shell that ran `seaglass auth login`. An agent that already has the MCP tools but no CLI token can call `cli_handoff` and redeem the code it returns with `seaglass auth redeem <code>`, no browser needed.
 
 ## Tools / commands
 
@@ -206,7 +206,7 @@ The connector and the CLI drive the same backend over the same operations. The c
 | `send_seaglass_product_feedback` | `seaglass send-product-feedback` | Send feedback about Seaglass itself |
 
 **MCP/agent-only — no CLI command, by design:** the transcript-recall tools
-(`transcript_search`, `transcript_read`) and the source-connector tools
+(`search_sessions`, `read_session`) and the source-connector tools
 (`list_source_connections`, `list_available_documents`, `import_source_document`,
 `resync_source_document`). Connecting a source and curating its available
 documents happen on the web; the agent imports from that shelf.
