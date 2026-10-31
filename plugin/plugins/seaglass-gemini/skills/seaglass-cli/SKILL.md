@@ -47,7 +47,8 @@ it, say so and give the user the line to run.
 | Read: recall, "what do we know about X" | `seaglass search "X" --json` |
 | Write a fact | `seaglass memory store --page ... --content "..." --json`, with `--library` when you can write to more than one library |
 | Write a document | `seaglass document store ... --json`, with `--library` the same way |
-| Correct or supersede a fact | `seaglass memory update ... --json` |
+| Correct a fact with the right one | `seaglass search "X" --json`, then `seaglass memory store ... --supersedes memory_... --json` |
+| Retract a fact nothing replaces | `seaglass memory update memory_... --action retract --note "..." --json` |
 | Author or edit a page | `seaglass page create` / `edit` / `append` |
 
 The skill decides *whether* an operation is called for and *what* goes in it;
@@ -216,10 +217,18 @@ seaglass annotate document_01HX... \
 Attaches post-hoc context to an existing `document_*` or `memory_*`; the
 annotation participates in synthesis like any other memory.
 
-## Correct: `seaglass memory update` and `seaglass reconsolidate`
+## Correct: `seaglass memory store --supersedes`, `memory update` and `reconsolidate`
+
+A correction that gives the right fact is one write: search the subject first,
+even when you hold the memory's id, then store the new fact with `--supersedes`
+naming every stale id the search returned. Never retract and then store.
 
 ```bash
-# Retract a fact that was never true (no replacement; the note is the tombstone label)
+# Correct a fact: search the subject, then store the right one superseding the old
+seaglass search "Ada Example" --json
+seaglass memory store --library "<library>" --page "Ada Example" --content "Ada Example is the PM on Project Example." --supersedes memory_01HX... --json
+
+# Retract a fact nothing replaces (the note is the tombstone label)
 seaglass memory update memory_01HX... --action retract --note "wrong manager, user-confirmed" --json
 
 # Diagnose memory confusion (analysis mode, no resolution)
@@ -234,8 +243,7 @@ seaglass reconsolidate "the Ada Example page mixes two different people" --kind 
 place of `--kind` and `--details-json`.
 
 The other `--action` values are `supersede` (with `--successor`) and
-`redact`. A newer fact is one `memory store --supersedes`, never
-retract-then-store, exactly as with the `supersedes` argument.
+`redact`.
 
 ## Pages: `seaglass page ...`
 
