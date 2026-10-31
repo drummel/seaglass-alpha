@@ -68,6 +68,21 @@ sg_is_cursor_host() {
     [[ "$SG_HOOK_HOST" == "cursor" ]]
 }
 
+# True on the Gemini CLI host, whose extension's hooks.json passes `gemini` as
+# the first argument.
+sg_is_gemini_host() {
+    [[ "$SG_HOOK_HOST" == "gemini" ]]
+}
+
+# The transcript format this host's `seaglass session` uploads name: Gemini CLI
+# writes its own JSONL; empty elsewhere, where the CLI's default (Claude Code's
+# shape) holds and an older CLI without --format keeps working.
+sg_transcript_format() {
+    if sg_is_gemini_host; then
+        printf '%s' gemini_cli_jsonl
+    fi
+}
+
 # True on the Claude host. Claude Code uniquely exposes CLAUDE_ENV_FILE (a
 # writable env file); Codex sets the CLAUDE_PLUGIN_ROOT/DATA aliases but not
 # CLAUDE_ENV_FILE, so this reliably discriminates the host.

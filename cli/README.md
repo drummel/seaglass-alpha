@@ -66,8 +66,8 @@ signed in).
 |---|---|---|
 | 0 | success | continue |
 | 1 | generic failure (a changed command will not fix it) | read stderr; investigate |
-| 2 | usage error: the command line is wrong (a flag missing, unknown, or with a bad value; a `--type` to add; a heading the page lacks; a library you cannot use), and stderr names the fix | fix the command as stderr says (`seaglass <cmd> --help`), rerun once |
-| 3 | not found (`search` returned `no_match`, or a named page or resource does not exist) | tell the user honestly |
+| 2 | usage error: the command line is wrong (a flag missing, unknown, or with a bad value; a `--type` to add; a heading the page lacks; a `--library` to name, or one you cannot use), and stderr names the fix | fix the command as stderr says (`seaglass <cmd> --help`), rerun once |
+| 3 | not found (`search` returned `no_match`, or a named page or resource does not exist) | answering the user, tell them honestly; searching before a write, run the write; a write that exits 3 failed |
 | 4 | resolution required (ambiguous page reference) | ask the user the clarification question |
 | 5 | auth failure (token missing, revoked, or invalid) | With the Seaglass MCP tools connected: call the cli_handoff tool, then run `seaglass auth redeem <code>` with the code it returns. Without them: run `seaglass auth login`, which opens a browser for the user to approve. Then rerun the failed command once. A set `SEAGLASS_TOKEN` overrides the saved token. |
 
@@ -76,9 +76,17 @@ signed in).
 `seaglass` POSTs JSON-RPC payloads to `${SEAGLASS_URL}/mcp` with the cached
 bearer token. Most subcommands wrap a single MCP tool call; `auth`, `install`,
 `update`, and the `session` / transcript commands speak to REST endpoints (all
-but `session start`, which calls the `start_session` tool), and
-`me` / `profile` read the `seaglass://profile` resource (profile *writes* live
-only in the admin web UI).
+but `session start`, which calls the `start_session` tool). `me` (and
+`profile --render`) read the `seaglass://profile` resource; `profile` and
+`profile agents` read your profile and the agents connected to your account
+over REST. Profile *writes*, and each agent's own settings, live only in the
+web app.
+
+A write names its library with `--library`: its slug, or `handle/slug` when
+your libraries span more than one account (e.g. `example-corp/plans`). Leave it
+out only when you can write to a single library; with more than one, the write
+exits 2 and names them. `search` takes `--library` and `--account` (a handle) to
+narrow a read that otherwise spans every account you are connected to.
 
 `seaglass bridge` (aliased `seaglass mcp`) is a stdio MCP transport bridge —
 JSON-RPC frames on stdin, responses on stdout — pointed at the same `/mcp`

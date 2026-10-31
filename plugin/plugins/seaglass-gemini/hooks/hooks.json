@@ -1,0 +1,40 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "name": "seaglass-session-start",
+            "type": "command",
+            "command": "bash \"${extensionPath}${/}hooks${/}session-start.sh\" gemini",
+            "timeout": 30000
+          }
+        ]
+      }
+    ],
+    "AfterAgent": [
+      {
+        "hooks": [
+          {
+            "name": "seaglass-transcript-flush",
+            "type": "command",
+            "command": "bash \"${extensionPath}${/}hooks${/}transcript-flush.sh\" gemini",
+            "timeout": 30000
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "name": "seaglass-session-end",
+            "type": "command",
+            "command": "bash \"${extensionPath}${/}hooks${/}session-end.sh\" gemini",
+            "timeout": 30000
+          }
+        ]
+      }
+    ]
+  }
+}
