@@ -1,6 +1,6 @@
 {
   "name": "seaglass-stg",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Seaglass memory for Gemini CLI: the memory connector (browser sign-in), the capture skill, session hooks and a status command.",
   "contextFileName": "GEMINI.md",
   "mcpServers": {
