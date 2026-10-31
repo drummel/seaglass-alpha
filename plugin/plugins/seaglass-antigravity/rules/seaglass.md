@@ -8,12 +8,12 @@ description: Seaglass memory. Open every conversation with start_session and kee
 You are connected to **Seaglass**, the user's memory across their AI tools,
 through the MCP server this plugin ships, which Antigravity names
 `seaglass-stg_seaglass-stg`. If
-its tools (`start_session`, `search`, `store_memory` and the rest) are not in
-your tool list, Antigravity has loaded them lazily: reach each one through
-`call_mcp_tool` with that server name.
+its tools (`start_session`, `search`, `store_memory` and the rest) are not
+among the tools you can call directly, Antigravity has loaded them lazily:
+reach each one through `call_mcp_tool` with that server name.
 
 Before your first reply in each conversation, call `start_session` (through
-`call_mcp_tool` if it is not a top-level tool), without announcing it. What it
+`call_mcp_tool` if you cannot call it directly), without announcing it. What it
 returns (how to read and write Seaglass memory, and this user's preferences) is
 what you work from.
 

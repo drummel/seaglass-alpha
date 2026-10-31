@@ -1,5 +1,5 @@
 {
   "name": "seaglass-stg",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Seaglass memory for Antigravity: the memory connector, the Seaglass skills, a session-start hook and a rule that opens each conversation with Seaglass."
 }
