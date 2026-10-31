@@ -104,7 +104,8 @@ ORIENT="Seaglass is on its tools in this session. Call its \`start_session\` too
 # CLI offer either: on Cursor and Antigravity what it adds (transcript capture)
 # is not wired up, and on Gemini the capture above already runs whenever a
 # signed-in CLI is present. On Antigravity this also keeps the hook's stdout to
-# the one JSON object its strict parser accepts.
+# the one JSON object its strict parser accepts; the plugin's rule, not this
+# line, says how to reach the lazily loaded tools, so that is said once.
 if sg_is_cursor_host || sg_is_gemini_host || sg_is_agy_host; then
     emit "$ORIENT"
     exit 0
