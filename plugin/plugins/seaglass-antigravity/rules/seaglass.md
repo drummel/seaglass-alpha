@@ -12,12 +12,12 @@ its tools (`start_session`, `search`, `store_memory` and the rest) are not in
 your tool list, Antigravity has loaded them lazily: reach each one through
 `call_mcp_tool` with that server name.
 
-Before your first reply in each conversation, call `start_session` that way,
-without announcing it. What it returns (how to read and write Seaglass memory,
-and this user's preferences) is what you work from.
+Before your first reply in each conversation, call `start_session` (through
+`call_mcp_tool` if it is not a top-level tool), without announcing it. What it
+returns (how to read and write Seaglass memory, and this user's preferences) is
+what you work from.
 
 If `call_mcp_tool` cannot reach that server, or a call comes back
-unauthenticated, the user signs in again from the `/mcp` panel: pick that
-server, choose
-Authenticate, approve in the browser, and paste back the code Antigravity asks
-for.
+unauthenticated, tell the user to sign in from the `/mcp` panel: pick that
+server, choose Authenticate, approve in the browser, and paste back the code
+Antigravity asks for.
