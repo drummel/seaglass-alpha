@@ -44,8 +44,8 @@ one question, then write them all.
    in, as your map names it (`-`, the account's main library, when your map
    lists one account), and `source_origin` has kind `conversation`, since the
    user said it here. Those
-   two go on every write, with the `content`: "Ada Example confirmed as PM of
-   Project Example at the April 15 kickoff. Previously CTO at Example Corp; the
+   two go on every write, with the `content`: "Ada Example is the PM of
+   Project Example, as of the April 15 kickoff. Previously CTO at Example Corp; the
    user noted this came up alongside her budget pushback the week before." The
    rest is optional. Ada Example is the `primary_page`, Project Example and the
    Q3 launch go in `links`, and the `capture_context` is "End-of-session
