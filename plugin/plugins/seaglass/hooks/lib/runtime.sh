@@ -4,11 +4,12 @@
 #
 # Works under Claude Code (CLAUDE_PLUGIN_ROOT / CLAUDE_ENV_FILE), ChatGPT/Codex
 # (PLUGIN_ROOT / PLUGIN_DATA, with CLAUDE_* aliases set for compatibility), and
-# Cursor, which names itself with a `cursor` argument in its hooks file because
-# it documents no variable a script could tell it apart by.
+# Cursor, Gemini CLI and Antigravity, which name themselves with a `cursor`,
+# `gemini` or `agy` argument in their hooks files because they document no
+# variable a script could tell them apart by.
 
-# The host a script was started by, from its first argument ("cursor"), set by
-# each hook before it sources this file.
+# The host a script was started by, from its first argument ("cursor",
+# "gemini", "agy"), set by each hook before it sources this file.
 SG_HOOK_HOST="${SG_HOOK_HOST:-}"
 
 # The plugin's writable data dir, kept across sessions (PLUGIN_DATA on Codex,
@@ -74,6 +75,12 @@ sg_is_gemini_host() {
     [[ "$SG_HOOK_HOST" == "gemini" ]]
 }
 
+# True on the Antigravity host (the `agy` CLI and the desktop app), whose
+# plugin's hooks.json passes `agy` as the first argument.
+sg_is_agy_host() {
+    [[ "$SG_HOOK_HOST" == "agy" ]]
+}
+
 # The transcript format this host's `seaglass session` uploads name: Gemini CLI
 # writes its own JSONL; empty elsewhere, where the CLI's default (Claude Code's
 # shape) holds and an older CLI without --format keeps working.
@@ -91,12 +98,14 @@ sg_is_claude_host() {
 }
 
 # The chat's id from a hook's stdin JSON: `session_id`, or on Cursor the
-# `conversation_id` it also sends, whichever is present.
+# `conversation_id` it also sends, or on Antigravity its camelCase
+# `conversationId`, whichever is present first.
 # Usage: sg_session_id "$INPUT_JSON"
 sg_session_id() {
     local id
     id="$(sg_json_field "$1" session_id)"
     [[ -n "$id" ]] || id="$(sg_json_field "$1" conversation_id)"
+    [[ -n "$id" ]] || id="$(sg_json_field "$1" conversationId)"
     printf '%s' "$id"
 }
 
