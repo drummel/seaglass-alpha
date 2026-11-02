@@ -1,8 +1,8 @@
 #!/bin/bash
 # SessionStart hook for the seaglass plugin. Host-neutral: runs under Claude
 # Code (CLAUDE_ENV_FILE / CLAUDE_PLUGIN_ROOT), ChatGPT/Codex (PLUGIN_ROOT /
-# PLUGIN_DATA), and Cursor and Gemini CLI, whose hooks files pass `cursor` or
-# `gemini` as the first argument.
+# PLUGIN_DATA), and Cursor, Gemini CLI and Antigravity, whose hooks files pass
+# `cursor`, `gemini` or `agy` as the first argument.
 #
 # Persists per-session state under the plugin data dir, pins CLI/stdio write
 # attribution on Claude, and states the session's transport as model-visible
@@ -20,7 +20,12 @@ SG_HOOK_HOST="${1:-}"
 # agent from the server, so each rule keeps one home and none is restated here.
 emit() {
     local ctx="$1"
-    if sg_is_cursor_host; then
+    if sg_is_agy_host; then
+        # Antigravity parses hook output as strict protojson and discards a
+        # reply carrying any field it does not know, Claude's envelope
+        # included; context goes in as an injected step.
+        python3 -c 'import json,sys; print(json.dumps({"injectSteps":[{"ephemeralMessage":sys.argv[1]}]}))' "$ctx"
+    elif sg_is_cursor_host; then
         # Cursor's sessionStart output: a flat additional_context field.
         python3 -c 'import json,sys; print(json.dumps({"additional_context":sys.argv[1]}))' "$ctx"
     elif sg_is_claude_host; then
@@ -59,10 +64,10 @@ fi
 # so the per-turn Stop/PreCompact hooks (AfterAgent on Gemini) no-op without a
 # network round trip. Default off on any failure. On Claude, also mirror to
 # CLAUDE_ENV_FILE (the original fast path); the state file is the cross-host
-# source of truth. Cursor stays off: its transcript format has not been checked
-# against the upload, and its hooks file registers no per-turn flush. Gemini's
-# uploads name its own format (sg_transcript_format).
-if sg_is_cursor_host; then
+# source of truth. Cursor and Antigravity stay off: their transcript formats
+# have not been checked against the upload, and their hooks files register no
+# per-turn flush. Gemini's uploads name its own format (sg_transcript_format).
+if sg_is_cursor_host || sg_is_agy_host; then
     sg_state_set "$SESSION_ID" capture off
 elif command -v seaglass >/dev/null 2>&1; then
     CAPTURE="$(sg_with_timeout 10 seaglass session transcript-config 2>/dev/null || echo off)"
@@ -90,15 +95,18 @@ INSTALL_HINT="run \`curl -fsSL ${INSTALL_URL} | bash\`"
 # as background and captured nothing (2026-09-23).
 ORIENT="Seaglass is on its tools in this session. Call its \`start_session\` tool before anything else, without announcing it: it returns who the user is, their preferences and custom instructions, the rules for using Seaglass, and a map of the libraries and collections you can reach. Take it in quietly, then do what the user's message calls for, as you would have without the call: it is context for you, not news for them."
 
-# Cursor and Gemini CLI: the plugin or extension ships the connector and its
-# always-on context (Cursor's rule, Gemini's GEMINI.md) names start_session, so
-# the tools are the transport whatever the CLI's state. The CLI branch below
-# would contradict that, and neither host has an env file to carry the session
-# id to the agent's own CLI calls, so their writes would land outside the
-# session this hook started. No CLI offer either: on Cursor what it adds
-# (transcript capture) is not wired up, and on Gemini the capture above already
-# runs whenever a signed-in CLI is present.
-if sg_is_cursor_host || sg_is_gemini_host; then
+# Cursor, Gemini CLI and Antigravity: the plugin or extension ships the
+# connector and its always-on context (Cursor's and Antigravity's rules,
+# Gemini's GEMINI.md) names start_session, so the tools are the transport
+# whatever the CLI's state. The CLI branch below would contradict that, and none
+# of these hosts has an env file to carry the session id to the agent's own CLI
+# calls, so their writes would land outside the session this hook started. No
+# CLI offer either: on Cursor and Antigravity what it adds (transcript capture)
+# is not wired up, and on Gemini the capture above already runs whenever a
+# signed-in CLI is present. On Antigravity this also keeps the hook's stdout to
+# the one JSON object its strict parser accepts; the plugin's rule, not this
+# line, says how to reach the lazily loaded tools, so that is said once.
+if sg_is_cursor_host || sg_is_gemini_host || sg_is_agy_host; then
     emit "$ORIENT"
     exit 0
 fi
