@@ -102,7 +102,8 @@ voice whichever writer wrote which page:
 3. **Don't invent.** Every claim traces to a memory, a document, or something
    the user told you directly, and an explanation is a claim: what a tool or
    setting is or does comes from them or is not said, and so is the kind of
-   thing a term names, unless a source names its kind. A config or code block
+   thing a term names ("a message queue", "a build tool"), unless a source
+   names its kind. A config or code block
    gets no gloss on its settings beyond what they give, and no name for the
    technique its code follows unless a source gives it, anywhere on the page,
    the one-line summary included. Spelling out a standard acronym is fine. When you
@@ -112,7 +113,9 @@ voice whichever writer wrote which page:
    say what is unsettled ("The launch date is unsettled: Q3 or Q4") rather than
    picking a side, and never describe the sources. A newer value that
    replaces an older one is a change, not a disagreement: state the new value,
-   and the old one only as history.
+   and the old one only as history. What the sources said about the old value
+   stays with it: a fact about the old owner, tool or destination does not
+   carry over to the new one unless a source says so.
 5. **Leave the page chrome out of the body.** The page already shows its title,
    sub-pages, a See also list (built from the pages the body links) and its
    sources, so the body has no heading repeating the title, no list of
@@ -147,8 +150,8 @@ voice whichever writer wrote which page:
    it matters and its main decisions; commands, settings, versions and file
    paths come after them and stay compact (several that share attributes fit
    a table), and one-off incidents and cosmetic changes get a sentence at most,
-   inside the section of the aspect they touch, never a section or a dated
-   heading of their own. What a table holds is not said again in the prose
+   inside the section of the aspect they touch, never a heading of their own
+   at any level, dated or not. What a table holds is not said again in the prose
    beside it.
 11. **Never describe how the page was made.** The body never mentions the
    sessions, captures, memories, notes or documents it was written from,
@@ -202,10 +205,11 @@ where it stands when your sources say so (with a dateline only when they date
 it), and what the sub-page covers, with the link. A sub-page's one-line summary
 tells you what it covers; it is not a source for claims about it. When you have
 nothing on a sub-page, its section is a sentence and the link. Lists, commands,
-versions and step-by-step history stay on the sub-page, where they won't go
-stale. Before
-creating one, read the parent with `search` and `body: false` to confirm it
-exists and learn its exact slug.
+settings, versions and step-by-step history stay on the sub-page, where they
+won't go stale. Before creating one, read the parent with `search` and
+`body: false` to confirm it exists and learn its exact slug. When it does not
+exist, the parent is part of what was asked for: create it first, then the
+sub-page.
 
 ## Correcting what memory holds
 
