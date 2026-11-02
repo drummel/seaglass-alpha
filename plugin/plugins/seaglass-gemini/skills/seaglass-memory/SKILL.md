@@ -101,14 +101,18 @@ voice whichever writer wrote which page:
    itself).
 3. **Don't invent.** Every claim traces to a memory, a document, or something
    the user told you directly, and an explanation is a claim: what a tool or
-   setting is or does comes from them or is not said, and a config or code
-   block gets no gloss on its settings beyond what they give. Spelling out a
-   standard acronym is fine. When you
+   setting is or does comes from them or is not said, and so is the kind of
+   thing a term names, unless a source names its kind. A config or code block
+   gets no gloss on its settings beyond what they give, and no name for the
+   technique its code follows unless a source gives it, anywhere on the page,
+   the one-line summary included. Spelling out a standard acronym is fine. When you
    cite, pass the ids you received as evidence, so the audit trail shows what
    the edit rests on.
 4. **Surface contradictions, in the subject's terms.** When sources disagree,
    say what is unsettled ("The launch date is unsettled: Q3 or Q4") rather than
-   picking a side, and never describe the sources.
+   picking a side, and never describe the sources. A newer value that
+   replaces an older one is a change, not a disagreement: state the new value,
+   and the old one only as history.
 5. **Leave the page chrome out of the body.** The page already shows its title,
    sub-pages, a See also list (built from the pages the body links) and its
    sources, so the body has no heading repeating the title, no list of
@@ -126,8 +130,10 @@ voice whichever writer wrote which page:
    that date beside the claim as a dateline ("as of 2026-07-23"), not inside the
    sentence as part of what was asserted.
 9. **Open with a lede.** Before any heading, a paragraph tells a newcomer what
-   the subject is, why it matters and where it stands now, going beyond the
-   one-line summary.
+   the subject is, why it matters (where the sources say) and where it stands
+   now, going beyond the one-line summary. When a newer fact changes something
+   the lede states, the lede names the new value, never a vaguer word that
+   covers old and new alike.
 10. **Organize by aspect, not by date.** Sections follow what the page's
    collection description says a page of its kind records (for a project: its
    purpose, how it works, its decisions and why), most important first. The
@@ -140,14 +146,20 @@ voice whichever writer wrote which page:
    dated entries. The lede and first sections carry what the subject is, why
    it matters and its main decisions; commands, settings, versions and file
    paths come after them and stay compact (several that share attributes fit
-   a table), and one-off incidents and cosmetic changes get a sentence at most.
+   a table), and one-off incidents and cosmetic changes get a sentence at most,
+   inside the section of the aspect they touch, never a section or a dated
+   heading of their own. What a table holds is not said again in the prose
+   beside it.
 11. **Never describe how the page was made.** The body never mentions the
    sessions, captures, memories, notes or documents it was written from,
    sources agreeing or disagreeing, or synthesis, and never says what is or is
    not recorded ("not recorded", "documented only by"), and never points out
-   what the page lacks ("not yet filled in", "no trigger has been stated"). A
+   what the page lacks ("not yet filled in", "no trigger has been stated"), or
+   what has or has not been said or confirmed since ("not confirmed since"). A
    subject that is itself about memory or sessions is described like any
-   other.
+   other. Call something unsettled only where the sources disagree (rule 4);
+   an open question the sources themselves record, a decision the subject has
+   yet to make, is a fact about the subject and stays on the page.
 
 ### What renders
 
