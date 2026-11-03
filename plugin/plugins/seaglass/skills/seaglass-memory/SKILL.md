@@ -43,27 +43,15 @@ Seaglass is the user's memory, shared across every AI tool they use. These rules
 
 ## Authoring wiki pages
 
-Who authors in each mode, the house voice every page is written in, what a page
+Who authors the pages, the house voice every page is written in, what a page
 may claim, and when a page splits. How each page tool behaves (its arguments, its
 versions, its errors) is written on the tool itself.
 
-### Who authors: the mode
+### Who authors
 
-The user chooses where page authoring runs, and their preferences say which
-(the Mode line).
-
-- **server mode.** Leave the pages to the worker and capture what it needs. Use
+  Leave the pages to the worker and capture what it needs. Use
   the page tools only for an edit the user asks for: a correction, a rename, a
   restructure.
-- **agent mode.** The Mode line says where a stated fact goes. On the page, a
-  new aspect of the subject gets a new section and a claim the page already
-  makes gets an edit. A page you have just created exists, so its body is an
-  edit too. A page you leave unwritten is written by the server when the
-  session ends, and the response that leaves it to you says so.
-
-In agent mode, a meaningful fact takes four steps: read the page (its body and
-its version), compose the change, write it against the version you read, and
-cite the memories and documents it rests on.
 
 ### House voice
 
