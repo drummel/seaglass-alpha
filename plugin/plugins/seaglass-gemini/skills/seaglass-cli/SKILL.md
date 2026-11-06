@@ -49,7 +49,6 @@ it, say so and give the user the line to run.
 | Write a document | `seaglass document store ... --json`, with `--library` the same way |
 | Correct a fact with the right one | `seaglass search "X" --json`, then `seaglass memory store ... --supersedes memory_... --json` |
 | Retract a fact nothing replaces | `seaglass memory update memory_... --action retract --note "..." --json` |
-| Author or edit a page | `seaglass page create` / `edit` / `append` |
 
 The skill decides *whether* an operation is called for and *what* goes in it;
 this table only says what it looks like once it is. The rest of this skill
@@ -248,33 +247,9 @@ The other `--action` values are `supersede` (with `--successor`) and
 ## Pages: `seaglass page ...`
 
 ```bash
-# Register a page without writing a memory about it
-seaglass page create --library "<library>" --type projects --title "Project Example" --json
-seaglass page create --library "<library>" --type people --title "Ada Example" --identity-hint "Example Corp PM" --json
-
-# Author or revise one section, citing the captures that justify it.
-# --base-version is the `version:` line of `seaglass search "Ada Example"` or
-# `page create`, or the `→ vN` your previous edit of the page printed.
-seaglass page edit "Ada Example" --base-version 3 \
-  --section "Current role" \
-  --content "Staff designer at [[Example Corp]], a role she started last month." \
-  --evidence memory_01HX... --evidence document_01HX... \
-  --edit-summary "job change" --json
-
-seaglass page append "Ada Example" --heading "Working style" --content "Prefers async reviews over meetings." --json
+# Who changed a page, and when
 seaglass page history "Ada Example" --json
-seaglass page revert "Ada Example" --to-version 3 --json
-seaglass page move "projects/project-example" "projects/project-example-v2" --json
 ```
-
-Without `--library`, `edit`, `append`, `revert` and `move` look the page up in
-every library you can write to; a name in more than one exits 2 with those
-libraries, and you ask the user which, then rerun with `--library`.
-`--evidence` is repeatable and is the `evidence_memory_ids` /
-`evidence_document_ids` pair. A `VERSION_CONFLICT` prints the current version
-and excerpt: re-read and re-apply. `page edit` and friends follow the same mode
-rule as the page tools: in server mode the worker authors, and you capture with
-`memory store` and `document store`.
 
 ## Feedback about Seaglass itself
 

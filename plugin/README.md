@@ -4,8 +4,10 @@ Connects Claude to the Seaglass personal memory layer. Once installed, Claude au
 
 One plugin, `seaglass`, does the whole job. It bundles:
 
-- **The remote memory connector** — the plugin declares Seaglass's hosted MCP endpoint (`<server>/mcp`), and the host runs its own browser sign-in for it. No local process, no token to copy. This is the full agent-facing tool surface: starting a session (`start_session`, the first call of every session, which returns the user's profile, preferences and any setup step), reading (`search`), writing (`store_memory`, `store_document`), retiring and redacting (`update_memory`), reconsolidating (`reconsolidate_memory`), authoring and editing wiki pages (`create_page`, `edit_page`/`edit_section`, `append_section`, `revert_page`, `move_page`, `get_page_history`), and tracing back through past sessions (`search_sessions`, `read_session`).
-- **The capture skill** (`seaglass-memory`) — teaches Claude when and how to read and write memories from conversation signals, how to author wiki pages in the house voice, how to correct what memory holds, and how to handle private content.
+- **The remote memory connector** — the plugin declares Seaglass's hosted MCP endpoint (`<server>/mcp`), and the host runs its own browser sign-in for it. No local process, no token to copy. This is the full agent-facing tool surface: starting a session (`start_session`, the first call of every session, which returns the user's profile, preferences and any setup step), reading (`search`), writing (`store_memory`, `store_document`), retiring and redacting (`update_memory`), reconsolidating (`reconsolidate_memory`), reading a page's edit history (`get_page_history`),
+  and tracing back through past sessions (`search_sessions`, `read_session`).
+- **The capture skill** (`seaglass-memory`) — teaches Claude when and how to read and write memories from conversation signals,
+  how to correct what memory holds, and how to handle private content.
 - **The CLI skill** (`seaglass-cli`): it maps the same operations onto the `seaglass` CLI for shell-capable clients (the token-cheap path; see [Tools / commands](#tools--commands)). It loads when the session's transport is the CLI, or when the agent has a shell and no Seaglass tools.
 - **A `/seaglass:status` command** — reports whether this client is actually connected to Seaglass and, if not, the one step that connects it.
 - **Session lifecycle hooks** (Claude Code, and any host that runs command hooks) — `SessionStart` states before the first turn whether the CLI or the tools are this session's transport: on the tools it tells the agent to call `start_session` first, and with a signed-in CLI it runs `seaglass session start` and injects what it prints (the profile, the resume briefing and any setup step); `SessionEnd` closes the `sessions` row server-side. Hosts that ignore hooks fall back to the `/recall` and `/checkpoint` skills.
@@ -197,12 +199,7 @@ The connector and the CLI drive the same backend over the same operations. The c
 | `store_document` | `seaglass document store` | Write a document |
 | `update_memory` | `seaglass memory update` | Retract / supersede / redact a memory or document |
 | `reconsolidate_memory` | `seaglass reconsolidate` | Diagnose + resolve memory confusion |
-| `create_page` | `seaglass page create` | Register a wiki page |
-| `edit_page` / `edit_section` | `seaglass page edit` | Author / revise a page (whole or one section) |
-| `append_section` | `seaglass page append` | Add a new section to a page |
-| `revert_page` | `seaglass page revert` | Roll a page back to an earlier version |
 | `get_page_history` | `seaglass page history` | Read a page's edit history |
-| `move_page` | `seaglass page move` | Rename / move a page to a new typed slug |
 | `send_seaglass_product_feedback` | `seaglass send-product-feedback` | Send feedback about Seaglass itself |
 
 **MCP/agent-only — no CLI command, by design:** the transcript-recall tools
@@ -224,6 +221,6 @@ sub-page is part of that project.
 **Parents must already exist.** Creating `projects/seaglass/competitors`
 requires `projects/seaglass` to already be a page; Seaglass never
 auto-creates ancestors. Reach for a sub-page when a page outgrows
-itself: create the parent first, then add the child with
-`create_page` (or implicitly via `store_memory` / `store_document`
-when their `primary_page` is a slug pointing at the new sub-page).
+itself: create the parent first, then add the child with a
+`store_memory` / `store_document` whose `primary_page` is a slug
+pointing at the new sub-page.
