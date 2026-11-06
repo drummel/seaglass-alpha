@@ -5,14 +5,14 @@ Connects Claude to the Seaglass personal memory layer. Once installed, Claude au
 One plugin, `seaglass`, does the whole job. It bundles:
 
 - **The remote memory connector** — the plugin declares Seaglass's hosted MCP endpoint (`<server>/mcp`), and the host runs its own browser sign-in for it. No local process, no token to copy. This is the full agent-facing tool surface: starting a session (`start_session`, the first call of every session, which returns the user's profile, preferences and any setup step), reading (`search`), writing (`store_memory`, `store_document`), retiring and redacting (`update_memory`), reconsolidating (`reconsolidate_memory`), reading a page's edit history (`get_page_history`),
-  and tracing back through past sessions (`search_sessions`, `read_session`).
+  and, while the server's transcript capture is on (it is off for now), tracing back through past sessions (`search_sessions`, `read_session`).
 - **The capture skill** (`seaglass-memory`) — teaches Claude when and how to read and write memories from conversation signals,
   how to correct what memory holds, and how to handle private content.
 - **The CLI skill** (`seaglass-cli`): it maps the same operations onto the `seaglass` CLI for shell-capable clients (the token-cheap path; see [Tools / commands](#tools--commands)). It loads when the session's transport is the CLI, or when the agent has a shell and no Seaglass tools.
 - **A `/seaglass:status` command** — reports whether this client is actually connected to Seaglass and, if not, the one step that connects it.
 - **Session lifecycle hooks** (Claude Code, and any host that runs command hooks) — `SessionStart` states before the first turn whether the CLI or the tools are this session's transport: on the tools it tells the agent to call `start_session` first, and with a signed-in CLI it runs `seaglass session start` and injects what it prints (the profile, the resume briefing and any setup step); `SessionEnd` closes the `sessions` row server-side. Hosts that ignore hooks fall back to the `/recall` and `/checkpoint` skills.
 
-The hooks shell out to the `seaglass` CLI, so the CLI is the plugin's second, optional prerequisite: without it the connector still works and the profile and resume briefing still arrive over MCP through `start_session`, but there is no automatic profile injection or transcript capture.
+The hooks shell out to the `seaglass` CLI, so the CLI is the plugin's second, optional prerequisite: without it the connector still works and the profile and resume briefing still arrive over MCP through `start_session`, but there is no automatic profile injection, and no transcript capture when the server turns it on.
 
 **Just want the connector?** You do not need the plugin at all. Add your Seaglass server's connector URL (`<server>/mcp`) as a custom connector in claude.ai, Claude Desktop, Cowork, Cursor, or Claude Code, approve in the browser, and `search` works. The Connections page in the Seaglass web app has one-click buttons and copyable recipes for every client.
 
@@ -205,7 +205,9 @@ The connector and the CLI drive the same backend over the same operations. The c
 **MCP/agent-only — no CLI command, by design:** the transcript-recall tools
 (`search_sessions`, `read_session`) and the source-connector tools
 (`list_source_connections`, `list_available_documents`, `import_source_document`,
-`resync_source_document`). Connecting a source and curating its available
+`resync_source_document`). The transcript-recall tools are listed only while the
+server's transcript capture is on, and it is off for now.
+Connecting a source and curating its available
 documents happen on the web; the agent imports from that shelf.
 
 ### Nested wiki sub-pages

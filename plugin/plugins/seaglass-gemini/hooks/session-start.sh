@@ -101,7 +101,7 @@ ORIENT="Seaglass is on its tools in this session. Call its \`start_session\` too
 # whatever the CLI's state. The CLI branch below would contradict that, and none
 # of these hosts has an env file to carry the session id to the agent's own CLI
 # calls, so their writes would land outside the session this hook started. No
-# CLI offer either: on Cursor and Antigravity what it adds (transcript capture)
+# CLI offer either: on Cursor and Antigravity the transcript capture it carries
 # is not wired up, and on Gemini the capture above already runs whenever a
 # signed-in CLI is present. On Antigravity this also keeps the hook's stdout to
 # the one JSON object its strict parser accepts; the plugin's rule, not this
@@ -122,7 +122,7 @@ if ! command -v seaglass >/dev/null 2>&1; then
     sg_flag_set cli-offer-made
     emit "$ORIENT
 
-The \`seaglass\` CLI is not installed here. It adds transcript capture, and it drives the same memory from a shell for less context per call. Offer it once, only if the work makes it relevant: ${INSTALL_HINT}, then \`seaglass auth login\`. This is the only time it is mentioned."
+The \`seaglass\` CLI is not installed here. It drives the same memory from a shell for less context per call. Offer it once, only if the work makes it relevant: ${INSTALL_HINT}, then \`seaglass auth login\`. This is the only time it is mentioned."
     exit 0
 fi
 
@@ -131,7 +131,7 @@ fi
 if ! seaglass auth status >/dev/null 2>&1; then
     emit "$ORIENT
 
-The \`seaglass\` CLI is installed but not signed in, so transcript capture is off. If the user wants it, offer once to run \`seaglass auth login\` for them: it opens a browser and waits for their approval, and the token then caches at ~/.config/seaglass/token."
+The \`seaglass\` CLI is installed but not signed in, so this session uses the Seaglass tools. If the user wants the CLI, which drives the same memory from a shell for less context per call, offer once to run \`seaglass auth login\` for them: it opens a browser and waits for their approval, and the token then caches at ~/.config/seaglass/token."
     exit 0
 fi
 
