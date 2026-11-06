@@ -5,8 +5,9 @@ description: Read and write the user's persistent memory, carried across every A
 
 # Seaglass memory skill
 
-The core rules first, then how pages are authored, how memory is corrected, and
-how private content is handled, then what to do when the connection is missing.
+The core rules first,
+then how memory is corrected and how private content is handled, then what to
+do when the connection is missing.
 What a single tool or argument needs is written on that tool, in its
 description; read it there.
 
@@ -31,7 +32,7 @@ Seaglass is the user's memory, shared across every AI tool they use. These rules
 2. **Capture when it is said.** A decision, preference, correction, or durable fact about a person, project, or topic is stored in the turn it is said, even mid-task, after a search when it changes state. Nothing files it later.
 3. **Search first when it changes state.** When the user corrects an earlier fact, gives a new title, role, owner, or status, reverses a decision, or says "actually" or "no longer", search the subject, even when the user gives the memory's id, then store the change with `supersedes` naming the memory the search returned; with no match, store it as new. Any other new fact is stored without a search.
 4. **Skip what is not memory:** small talk and remarks about the moment, transient task state, scratch work, what the user only asks about, what you just read back, and a request to change how you behave, which goes to the user's preferences, not memory.
-5. **The user's preferences override these defaults.** Their Reading, Writing, Asking, and Voicing preferences and custom instructions arrive with the connection. Follow them literally, and apply Asking last: it gates every write, page edits included.
+5. **The user's preferences override these defaults.** Their Reading, Writing, Asking, and Voicing preferences and custom instructions arrive with the connection. Follow them literally, and apply Asking last: it gates every write.
 6. **Off the record means unsaved.** Store nothing the user puts off the record ("between us", "don't remember this", "keep this private"), not even privately, and never repeat it back, even to check. A note they ask for ("make a private note, just for me") goes in `private to you`.
 7. **Never supply identity.** Who the user and agent are comes from the connection, never from you.
 8. **Report only what landed.** Say what a write's receipt says, including what did not happen, and nothing more; before the receipt, never call it saved. On an invalid-arguments error, fix what it names and resend once; retry a transient error once; when a write fails, say so first.
@@ -41,169 +42,11 @@ Seaglass is the user's memory, shared across every AI tool they use. These rules
 12. **At a wrap-up** ("thanks", "that's all", the task done), store what this session left unstored, then reply.
 13. **Ask where it belongs.** When what you are about to write could belong in more than one library or account on your map, or a write is refused asking which library you mean, ask the user which one, naming the candidates as your map names them, then write there; never pick one yourself. That question asks where, not whether, so it holds when the user's preferences say to write without asking. When it plainly belongs in one library, write it there without asking, naming that `library` on the write.
 
-## Authoring wiki pages
-
-Who authors the pages, the house voice every page is written in, what a page
-may claim, and when a page splits. How each page tool behaves (its arguments, its
-versions, its errors) is written on the tool itself.
-
-### Who authors
-
-  Leave the pages to the worker and capture what it needs. Use
-  the page tools only for an edit the user asks for: a correction, a rename, a
-  restructure.
-
-### House voice
-
-The same eleven rules the synthesis worker follows
-(`synthesis/prompts/page.py::PAGE_SYNTHESIS_SYSTEM`), so the wiki reads as one
-voice whichever writer wrote which page:
-
-1. **Write for readability.** A page reads like a reference entry on its
-   subject, for a reader who has never seen it, possibly someone it is shared
-   with. Use the form that reads most clearly, not the one the facts arrived
-   in:
-   - prose to explain what something is and why;
-   - a numbered list for steps a reader follows in order, one step per item:
-     a release done in four steps is a four-item list;
-   - a list for options or several parallel points;
-   - a table when several things are compared on the same attributes: three
-     plans by price, seats and support are one row per plan and one column
-     per attribute.
-
-   Steps or a comparison the user gave you as sentences still become a list or
-   a table. A list is never a dump of loose facts: each item is a complete
-   thought, introduced by a sentence that says what it lists. Explain or leave out internal identifiers, code names, file
-   paths and jargon that reader would not know. The first time the body uses a term a
-   newcomer would not know (a tool, a protocol, an acronym, an internal name),
-   say in a few words what it is, from what the sources say about it, in that
-   same sentence; a link alone does not explain it. A term the sources don't
-   explain stays named, described only by what it does in them ("the
-   project's scripts run on Bun"), never defined from your own knowledge.
-2. **Wrap every cross-link.** Link another page in double brackets, by its typed
-   slug when you have it (`[[people/ada-example]]`), otherwise by its canonical
-   name: `[[Ada Example]]`, not `[[Ada]]`. Linking keeps the page on its
-   subject: when the page mentions a related subject that has a page of its
-   own, keep it to a sentence and its link and leave its detail to that page.
-   A sub-page gets an overview section instead (see When a page outgrows
-   itself).
-3. **Don't invent.** Every claim traces to a memory, a document, or something
-   the user told you directly, and an explanation is a claim: what a tool or
-   setting is or does comes from them or is not said, and so is the kind of
-   thing a term names ("a message queue", "a build tool"), unless a source
-   names its kind. A config or code block
-   gets no gloss on its settings beyond what they give, and no name for the
-   technique its code follows unless a source gives it, anywhere on the page,
-   the one-line summary included. Spelling out a standard acronym is fine. When you
-   cite, pass the ids you received as evidence, so the audit trail shows what
-   the edit rests on.
-4. **Surface contradictions, in the subject's terms.** When sources disagree,
-   say what is unsettled ("The launch date is unsettled: Q3 or Q4") rather than
-   picking a side, and never describe the sources. A newer value that
-   replaces an older one is a change, not a disagreement: state the new value,
-   and the old one only as history. What the sources said about the old value
-   stays with it: a fact about the old owner, tool or destination does not
-   carry over to the new one unless a source says so.
-5. **Leave the page chrome out of the body.** The page already shows its title,
-   sub-pages, a See also list (built from the pages the body links) and its
-   sources, so the body has no heading repeating the title, no list of
-   sub-pages and no See also section. Link related pages where the prose
-   mentions them. A page with sub-pages gives each one a short overview
-   section (see When a page outgrows itself), which is not a list.
-6. **Keep the one-line summary tight and indexable.** It shows up in outlines,
-   search results, and the page tree's list of sub-pages.
-7. **No em dashes.** Use a comma, colon, or period instead. The long dash never
-   belongs in a page body, a one-line summary, or an edit summary you author.
-8. **Keep the source's own words for when something happened.** If the user said
-   "last week" or "end of Q3", write that, never an anchored calendar date you
-   worked out from it. A body sentence reads as a stated claim, so a day nobody
-   stated is a fact you invented. Where it matters when the fact was known, put
-   that date beside the claim as a dateline ("as of 2026-07-23"), not inside the
-   sentence as part of what was asserted.
-9. **Open with a lede.** Before any heading, a paragraph tells a newcomer what
-   the subject is, why it matters (where the sources say) and where it stands
-   now, going beyond the one-line summary. When a newer fact changes something
-   the lede states, the lede names the new value, never a vaguer word that
-   covers old and new alike.
-10. **Organize by aspect, not by date.** Sections follow what the page's
-   collection description says a page of its kind records (for a project: its
-   purpose, how it works, its decisions and why), most important first. The
-   description is in the map of your libraries or the `seaglass://libraries`
-   resource; take only the aspects it names, not its filing instructions. With
-   no description, use the subject's own natural aspects. Write a section only
-   for an aspect the sources say something about; one they don't cover gets no
-   heading and no mention (a sub-page still gets its overview section, below).
-   Keep a dated log only where the collection asks for
-   dated entries. The lede and first sections carry what the subject is, why
-   it matters and its main decisions; commands, settings, versions and file
-   paths come after them and stay compact (several that share attributes fit
-   a table), and one-off incidents and cosmetic changes get a sentence at most,
-   inside the section of the aspect they touch, never a heading of their own
-   at any level, dated or not. What a table holds is not said again in the prose
-   beside it.
-11. **Never describe how the page was made.** The body never mentions the
-   sessions, captures, memories, notes or documents it was written from,
-   sources agreeing or disagreeing, or synthesis, and never says what is or is
-   not recorded ("not recorded", "documented only by"), and never points out
-   what the page lacks ("not yet filled in", "no trigger has been stated"), or
-   what has or has not been said or confirmed since ("not confirmed since"). A
-   subject that is itself about memory or sessions is described like any
-   other. Call something unsettled only where the sources disagree (rule 4);
-   an open question the sources themselves record, a decision the subject has
-   yet to make, is a fact about the subject and stays on the page.
-
-### What renders
-
-- Sections are `##` and `###` headings at the start of a line. `edit_section`
-  addresses one by its heading; `append_section` adds a new one at the end.
-- Lists, tables, code fences with a language tag (```` ```python ````) and
-  `[text](https://…)` links render. Code, and commands a reader runs one after
-  another where every step is a command, go in one fence tagged with its
-  language (```` ```bash ````, never a bare ```` ``` ````), which gets a label
-  and syntax colors; a short note on a step goes beside the block, not between
-  its lines. When some step is an action with no command given (clone the
-  repo, open the settings page), the steps are a numbered list, each command
-  inline in its step.
-- Footnotes, task-list checkboxes, callouts and HTML show as literal text, and
-  an image shows only as a link to it, so leave them out.
-
-### Write what the sources support
-
-Authoring is the job; supplying the specifics nobody gave you is not. Everything
-on a page traces to something: the user said it, a tool returned it, or a cited
-document contains it.
-
-- Don't fill a heading because a template has one. Thin sources read thin.
-- Don't explain a mechanism you weren't told. "Redis is the source of truth" is
-  the fact; how it is wired is not.
-- Don't attribute a role, an owner, or a rationale nobody stated.
-
-Mark inference as inference ("this suggests", "worth confirming"). An unhedged
-guess is a fabrication with good posture.
-
-### When a page outgrows itself
-
-Split a sub-page off when one part of a page has become a subject of its own. The
-sub-page's slug extends its parent's (`projects/project-example/pricing`
-under `projects/project-example`), and the parent stays the overview: it leaves each
-sub-page's detail to the sub-page and never lists its sub-pages (the page tree
-does). Each sub-page gets a short overview section headed with its title, standing
-where the aspect it covers would go: two to four sentences on what that part is,
-where it stands when your sources say so (with a dateline only when they date
-it), and what the sub-page covers, with the link. A sub-page's one-line summary
-tells you what it covers; it is not a source for claims about it. When you have
-nothing on a sub-page, its section is a sentence and the link. Lists, commands,
-settings, versions and step-by-step history stay on the sub-page, where they
-won't go stale. Before creating one, read the parent with `search` and
-`body: false` to confirm it exists and learn its exact slug. When it does not
-exist, the parent is part of what was asked for: create it first, then the
-sub-page.
-
 ## Correcting what memory holds
 
 Each correcting tool says how it is used (a newer fact that replaces an old one,
-a retraction, an identity repair, a move); this covers the judgment no
-single tool can make for you.
+a retraction, an identity repair); this covers the judgment no single tool can
+make for you.
 
 ### Two subjects on one page
 
@@ -213,6 +56,15 @@ before explaining anything. Ask the question it returns, and call it again with
 the `resolution` only after they confirm. Do not split by hand with new pages,
 memories, or retractions: those leave the mixed page and its evidence as they
 were, and only the tool's apply moves the evidence.
+
+### Changing a page itself
+
+When the user asks you to rename, restructure or rewrite a page and you have no
+tool that writes pages, say that a page is changed on the page itself in the
+Seaglass web app, and reply with the page's `url` from a search hit (search the
+page first if you have not), so they can open it. Never say the page changed. A
+wrong fact on it is still yours to correct: store the right one with
+`supersedes`, and the page is rewritten from it.
 
 ### Merely old is not wrong
 
@@ -228,8 +80,8 @@ core rule 6.
 ### When the user marks it
 
 "Off the record", "between us", "don't remember this", "keep this private": write
-nothing from what they marked (no memory, document, page edit or capture
-context), and if you mention it, say only that it was not saved.
+nothing from what they marked (no memory, document or capture context), and if
+you mention it, say only that it was not saved.
 
 ### A private note goes in their private library
 
