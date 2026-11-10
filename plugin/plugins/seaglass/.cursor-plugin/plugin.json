@@ -1,7 +1,7 @@
 {
   "name": "seaglass",
   "displayName": "Seaglass",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Persistent memory across your AI tools: connects Cursor to the Seaglass memory layer and teaches it what to capture.",
   "author": { "name": "Seaglass" },
   "homepage": "https://github.com/drummel/seaglass-alpha",

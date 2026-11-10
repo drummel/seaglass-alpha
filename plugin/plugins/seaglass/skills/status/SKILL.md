@@ -64,10 +64,10 @@ Connected to Seaglass. Setup is not complete: <the step or steps start_session n
 
 ## What the plugin does and does not provide
 
-The plugin ships the Seaglass connector, so installing it should give you the
-tools directly, with no separate setup. If the tools are missing anyway, the
-connector was not registered or was never approved in the browser; the
-reconnect recipe fixes both.
+The plugin declares the Seaglass connector, and not every client adds it with
+the plugin. If the tools are missing, the connector was not added or was never
+approved in the browser; the reconnect recipe says which, per client, and
+fixes both.
 
 The `seaglass` CLI is a separate, optional power-up. It is not needed for
 memory reads or writes; it adds transcript capture.
