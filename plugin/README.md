@@ -4,7 +4,7 @@ Connects Claude to the Seaglass personal memory layer. Once installed, Claude au
 
 One plugin, `seaglass`, does the whole job. It bundles:
 
-- **The remote memory connector** — the plugin declares Seaglass's hosted MCP endpoint (`<server>/mcp`), and the host runs its own browser sign-in for it. No local process, no token to copy. This is the full agent-facing tool surface: starting a session (`start_session`, the first call of every session, which returns the user's profile, preferences and any setup step), reading (`search`), writing (`store_memory`, `store_document`), retiring and redacting (`update_memory`), reconsolidating (`reconsolidate_memory`), reading a page's edit history (`get_page_history`),
+- **The remote memory connector** — the plugin declares Seaglass's hosted MCP endpoint (`<server>/mcp`), and the host runs its own browser sign-in for it (the Claude chat apps add the connector separately, see [below](#install-in-claude-desktop-claudeai-and-cowork)). No local process, no token to copy. This is the full agent-facing tool surface: starting a session (`start_session`, the first call of every session, which returns the user's profile, preferences and any setup step), reading (`search`), writing (`store_memory`, `store_document`), retiring and redacting (`update_memory`), reconsolidating (`reconsolidate_memory`), reading a page's edit history (`get_page_history`),
   and, while the server's transcript capture is on (it is off for now), tracing back through past sessions (`search_sessions`, `read_session`).
 - **The capture skill** (`seaglass-memory`) — teaches Claude when and how to read and write memories from conversation signals,
   how to correct what memory holds, and how to handle private content.
@@ -96,7 +96,7 @@ claude plugin uninstall seaglass@seaglass-memory-stg
 
 ### Plugin (recommended on paid plans)
 
-Open **Customize**, then **Plugins**, click **+** under Personal plugins, choose **Add marketplace** and enter the marketplace's GitHub repository (`drummel/seaglass-alpha`), then install `seaglass`. The bundled connector prompts for its browser sign-in as part of the install. Skills load on the web, in the Desktop Chat tab, and in Cowork; command hooks run only where the host runs them (Cowork today), so the chat surfaces use `/recall` and `/checkpoint` instead.
+Open **Customize**, then **Plugins**, click **+** under Personal plugins, choose **Add marketplace** and enter the marketplace's GitHub repository (`drummel/seaglass-alpha`), then install `seaglass`. Adding the plugin does not add its connector to your Claude account: open https://get-stg.seaglassai.com/claude, which opens the add-connector dialog with Seaglass filled in, add it and approve in the browser (or use the plugin's **Connectors** tab). Skills load on the web, in the Desktop Chat tab, and in Cowork; command hooks run only where the host runs them (Cowork today), so the chat surfaces use `/recall` and `/checkpoint` instead.
 
 ### Remote connector (no plugin)
 

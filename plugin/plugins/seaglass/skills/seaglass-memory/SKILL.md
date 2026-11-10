@@ -106,7 +106,9 @@ connected.
 
 ## If the Seaglass tools aren't available (or a call comes back unauthenticated)
 
-The plugin registers the Seaglass connector. When the tools (`search`,
+The Seaglass connector carries the tools. In Claude Code and Codex the plugin
+registers it; in Claude Desktop, claude.ai and Cowork, adding the plugin does
+not add the connector to the user's Claude account. When the tools (`search`,
 `store_memory`, `store_document`, `update_memory`, `reconsolidate_memory`) are
 not loaded, the connector was never added or never approved in this client;
 when a call returns an unauthenticated or not-connected error, its grant
@@ -119,16 +121,22 @@ Seaglass command. Give the one line for the client you are running in:
   connector with
   `claude mcp add --transport http seaglass https://api-stg.seaglassai.com/mcp`
   and then Authenticate.
-- **Claude Desktop, claude.ai, Cowork:** open Customize, then Connectors, and
-  reconnect Seaglass; if it is not listed, add a custom connector with
-  `https://api-stg.seaglassai.com/mcp`. Approve in the browser.
+- **Claude Desktop, claude.ai, Cowork:** have the user open Customize, then
+  Connectors. If Seaglass is listed, they connect or reconnect it there and
+  approve in the browser. If it is not listed, give them the link
+  https://get-stg.seaglassai.com/claude as a link they can click, not as
+  code: it opens Claude's add-connector dialog with Seaglass filled in, and
+  they add it, approve in the browser, and start a new chat. If the link does
+  not open the dialog, they add a custom connector on the Connectors page with
+  `https://api-stg.seaglassai.com/mcp`. Give the link in these three apps only;
+  in any other client it is the wrong fix.
 - **Codex:** run `codex mcp login seaglass` (or click Authenticate).
 
 Handling notes:
 
 - **Name the exact step in your reply.** Say `/mcp` then **Authenticate** (or
-  the Connectors page) verbatim, not "reconnect Seaglass": the user may act on
-  your message later, from a window you can't see.
+  the link, or the Connectors page) verbatim, not "reconnect Seaglass": the
+  user may act on your message later, from a window you can't see.
 - **A connection problem is not product feedback.** Do not call
   `send_seaglass_product_feedback`, or any other Seaglass tool, about the tools
   being unavailable; reply in text with the step.
