@@ -14,7 +14,7 @@ One plugin, `seaglass`, does the whole job. It bundles:
 
 The hooks shell out to the `seaglass` CLI, so the CLI is the plugin's second, optional prerequisite: without it the connector still works and the profile and resume briefing still arrive over MCP through `start_session`, but there is no automatic profile injection, and no transcript capture when the server turns it on.
 
-**Just want the connector?** You do not need the plugin at all. Add your Seaglass server's connector URL (`<server>/mcp`) as a custom connector in claude.ai, Claude Desktop, Cowork, Cursor, or Claude Code, approve in the browser, and `search` works. The Connections page in the Seaglass web app has one-click buttons and copyable recipes for every client.
+**Just want the connector?** You do not need the plugin at all. Add your Seaglass server's connector URL (`<server>/mcp`) as a custom connector in claude.ai, Claude Desktop, Cowork, Cursor, or Claude Code, approve in the browser, and `search` works. The Add an agent page in the Seaglass web app (Your agents, then Add) has one-click buttons and copyable recipes for every client.
 
 A second plugin, `plugin/plugins/seaglass-hermes/`, is for the [Hermes](https://github.com/NousResearch/hermes-agent) agent. Hermes does not read Claude marketplaces, so `marketplace.json` lists only `seaglass`; Hermes installs the folder directly with `hermes plugins install drummel/seaglass-alpha/plugin/plugins/seaglass-hermes --enable`. Its README has the full setup.
 
@@ -100,7 +100,7 @@ Open **Customize**, then **Plugins**, click **+** under Personal plugins, choose
 
 ### Remote connector (no plugin)
 
-Add your Seaglass server as a custom connector: **Customize**, **Connectors**, **Add custom connector**, paste `<server>/mcp`, and approve in the browser. The "Add to Claude" button on the Connections page prefills this for you. A connector added once reaches claude.ai, Desktop, Cowork, and mobile. No CLI, no local process. (The old one-click `.mcpb` bundle has been removed; the connector replaces it.)
+Add your Seaglass server as a custom connector: **Customize**, **Connectors**, **Add custom connector**, paste `<server>/mcp`, and approve in the browser. The "Add to Claude" button on the Add an agent page prefills this for you. A connector added once reaches claude.ai, Desktop, Cowork, and mobile. No CLI, no local process. (The old one-click `.mcpb` bundle has been removed; the connector replaces it.)
 
 ### Manual JSON config (stdio fallback)
 
