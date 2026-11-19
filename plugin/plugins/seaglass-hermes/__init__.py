@@ -37,12 +37,13 @@ def _connect_hint() -> str:
 
 def orientation() -> str:
     return (
-        "Seaglass memory is connected to this Hermes through its MCP tools. Call the "
-        "Seaglass `start_session` tool before anything else in this conversation, and "
-        "again if its result is no longer in context (after a compaction), without "
-        "announcing it: it returns who the user is, their preferences and custom "
-        "instructions, the rules for using Seaglass, and any setup step. Take it in "
-        "quietly, then do what the user's message calls for.\n\n"
+        "Seaglass memory is connected to this Hermes through its MCP tools. At the "
+        "start of a conversation that touches the user's work, people, projects or "
+        "past decisions, call the Seaglass `start_session` tool before any other "
+        "Seaglass call, and again if its result is no longer in context (after a "
+        "compaction): it returns who the user is, their preferences and their own "
+        "instructions, and any setup step. Then do what the user's message calls "
+        "for, with what it returns as context for that work.\n\n"
         f"If no Seaglass tools are available, Seaglass is not connected: {_connect_hint()}"
     )
 
