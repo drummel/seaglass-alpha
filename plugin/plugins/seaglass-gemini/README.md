@@ -21,7 +21,7 @@ Update later with `gemini extensions update seaglass-stg`.
 | Gemini surface | What Seaglass does there |
 |---|---|
 | MCP server `seaglass-stg` | The memory tools, signed in through the browser on first launch |
-| `GEMINI.md` | Opens every session with `start_session` and sends kept facts to Seaglass |
+| `GEMINI.md` | Calls `start_session` when a session turns to your work, and sends kept facts to Seaglass |
 | Skills | `seaglass-memory`, `checkpoint` and `seaglass-cli` |
 | Commands | `/seaglass-stg:status`, `:recall` and `:checkpoint` |
 | Hooks | Session start and end, and transcript capture when the `seaglass` CLI is signed in and capture is on (macOS and Linux) |

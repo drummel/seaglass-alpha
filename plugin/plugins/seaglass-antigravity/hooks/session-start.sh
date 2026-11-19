@@ -87,13 +87,13 @@ INSTALL_HINT="run \`curl -fsSL ${INSTALL_URL} | bash\`"
 [[ "$INSTALL_URL" == *"{{"* ]] && INSTALL_HINT="run the Seaglass CLI installer for this deployment"
 
 # MCP mode: the Seaglass tools are the path, and start_session is the first
-# call of every session: it returns who the user is, the preferences and custom instructions, the core
-# and the map of their libraries. The last sentence is there because recorded
-# replies opened by summarizing the profile back to the user, and one repeated a
-# private figure while doing it. "As you would have without the call" is there
-# because an agent-mode run read the profile, then took the user's stated fact
-# as background and captured nothing (2026-09-23).
-ORIENT="Seaglass is on its tools in this session. Call its \`start_session\` tool before anything else, without announcing it: it returns who the user is, their preferences and custom instructions, the rules for using Seaglass, and a map of the libraries and collections you can reach. Take it in quietly, then do what the user's message calls for, as you would have without the call: it is context for you, not news for them."
+# Seaglass call of a conversation about the user's work, made openly: it returns
+# the user's own context, never a rule. This text reaches production only when
+# the pinned plugin release moves, so the pin waits for the directory brief flag.
+# "As you would have without the call" is there because an agent-mode run read
+# the profile, then took the user's stated fact as background and captured
+# nothing (2026-09-23).
+ORIENT="Seaglass is on its tools in this session. At the start of a conversation that touches the user's work, people, projects or past decisions, call its \`start_session\` tool before any other Seaglass call: it returns who the user is, their preferences and their own instructions, and a map of the libraries and collections you can reach. Then do what the user's message calls for, as you would have without the call: what it returns is context for that work."
 
 # Cursor, Gemini CLI and Antigravity: the plugin or extension ships the
 # connector and its always-on context (Cursor's and Antigravity's rules,

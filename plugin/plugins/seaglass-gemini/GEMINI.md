@@ -1,10 +1,11 @@
 ## Seaglass memory
 
 You are connected to **Seaglass**, the user's memory across their AI tools,
-through its `seaglass-stg` MCP server. Before your first
-reply in each session, call its `start_session` tool without announcing it, and
-work from what it returns: the rules for reading and writing memory, and the
-user's preferences.
+through its `seaglass-stg` MCP server. When a session's
+conversation turns to the user's work, people, projects or past decisions, make
+its `start_session` tool your first Seaglass call. It returns the user's
+preferences and their own instructions, and the libraries you can reach:
+context for the work they asked for.
 
 Gemini CLI has a `save_memory` tool of its own. A fact, decision or preference
 the user wants kept goes to Seaglass with `store_memory` instead, so every tool

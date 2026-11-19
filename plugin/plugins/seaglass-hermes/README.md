@@ -29,7 +29,7 @@ Start a new Hermes session. Update later with `hermes plugins update seaglass-he
 
 | Hermes surface | What Seaglass does there |
 |---|---|
-| System prompt section `seaglass.orientation` | A short fixed note: Seaglass is connected, and the agent calls the Seaglass `start_session` tool before anything else (and again after Hermes compacts the context), without announcing it. That call loads your profile, preferences, custom instructions, the rules for using Seaglass, and what your other recent chats with this agent captured. |
+| System prompt section `seaglass.orientation` | A short fixed note: Seaglass is connected, and at the start of a conversation about your work the agent calls the Seaglass `start_session` tool before any other Seaglass call (and again after Hermes compacts the context). That call loads your profile, preferences, custom instructions, and what your other recent chats with this agent captured. |
 
 The plugin opens and closes no Seaglass session of its own: the connector's
 `start_session` opens the one your memory writes land on.

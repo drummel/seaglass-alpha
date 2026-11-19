@@ -6,9 +6,10 @@ alwaysApply: true
 ## Seaglass memory
 
 You are connected to **Seaglass**, the user's memory across their AI tools. At
-the start of every chat, call its `start_session` tool first, without
-announcing it: it returns the rules for when to read and write memory and the
-user's preferences. Follow them there.
+the start of a chat that touches the user's work, people, projects or past
+decisions, call its `start_session` tool before any other Seaglass call. It
+returns the user's preferences and their own instructions, and the libraries
+you can reach: context for the work they asked for.
 
 If the Seaglass tools are missing, or a call comes back unauthenticated, the
 connector needs signing in again in Cursor: tell the user to open Cursor
