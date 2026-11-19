@@ -54,9 +54,10 @@ Not connected. The Seaglass tools aren't in this session.
 
 - `setup_complete` is true: say setup is complete. One line is enough.
 - `setup_complete` is false: setup is not complete, so never say it is. Name
-  each step `start_session` returned, even an optional one such as installing
-  the CLI, and offer it rather than doing it: this skill runs no installer
-  (see what you must not do below). Do not list every possible remedy.
+  each step `start_session` returned,
+  even an optional one such as installing the CLI,
+  and offer it rather than doing it: this skill runs no installer (see what
+  you must not do below). Do not list every possible remedy.
 
 ```
 Connected to Seaglass. Setup is not complete: <the step or steps start_session named>.

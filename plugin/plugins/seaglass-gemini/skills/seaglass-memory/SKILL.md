@@ -14,7 +14,8 @@ description; read it there.
 ## Which path you are on
 
 Start every session with `start_session`, unannounced, before any other call and
-before you answer. On the CLI transport the SessionStart hook has already run
+before you answer.
+On the CLI transport the SessionStart hook has already run
 `seaglass session start`.
 
 The Seaglass tools (`search`, `store_memory`, and the rest) are the default path.
@@ -100,25 +101,27 @@ use it, do not name what it says.
 
 ## Commands
 
-`/checkpoint` captures what a long session produced in one pass. `/recall` loads
-context for a topic on request, and `/status` says whether this client is
-connected.
+`/checkpoint` captures what a long session produced in one pass.
+`/recall` loads context for a topic on request, and `/status` says whether this
+client is connected.
 
 ## If the Seaglass tools aren't available (or a call comes back unauthenticated)
 
-The Seaglass connector carries the tools. In Claude Code and Codex the plugin
-registers it; in Claude Desktop, claude.ai and Cowork, adding the plugin does
-not add the connector to the user's Claude account. When the tools (`search`,
-`store_memory`, `store_document`, `update_memory`, `reconsolidate_memory`) are
-not loaded, the connector was never added or never approved in this client;
-when a call returns an unauthenticated or not-connected error, its grant
-expired. Either way the fix is the client's own connector sign-in, not a
-Seaglass command. Give the one line for the client you are running in:
+The Seaglass connector carries the tools.
+In Claude Code and Codex the plugin registers it; in Claude Desktop, claude.ai
+and Cowork, adding the plugin does not add the connector to the user's Claude
+account.
+When the tools (`search`, `store_memory`, `store_document`, `update_memory`,
+`reconsolidate_memory`) are not loaded, the connector was never added or never
+approved in this client; when a call returns an unauthenticated or
+not-connected error, its grant expired. Either way the fix is the client's own
+connector sign-in, not a Seaglass command.
+Give the one line for the client you are running in:
 
 - **Claude Code:** run `/mcp`, pick `seaglass`, choose **Authenticate**, and
   approve in the browser; the tools load on the next turn. If `/mcp` does not
-  list `seaglass`, reinstall or re-enable the Seaglass plugin, or add the
-  connector with
+  list `seaglass`, reinstall or re-enable the Seaglass plugin.
+  If that does not bring it back, add the connector with
   `claude mcp add --transport http seaglass https://api-stg.seaglassai.com/mcp`
   and then Authenticate.
 - **Claude Desktop, claude.ai, Cowork:** have the user open Customize, then
