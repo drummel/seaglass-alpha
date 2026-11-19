@@ -31,7 +31,7 @@ over the tools and say so once.
 
 ## Core rules
 
-Seaglass is the user's memory, shared across every AI tool they use. These rules hold on every host and on either path.
+Seaglass is the user's memory, shared across every AI tool they use. These rules hold on every host.
 
 1. **Read before assuming.** When the user names a person, project, topic, or past decision, search it before you answer or act.
 2. **Capture when it is said.** A decision, preference, correction, or durable fact about a person, project, or topic is stored in the turn it is said, even mid-task, after a search when it changes state. Nothing files it later.
