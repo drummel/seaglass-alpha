@@ -123,11 +123,12 @@ not-connected error, its grant expired. Either way the fix is the client's own
 connector sign-in, not a Seaglass command.
 Give the one line for the client you are running in:
 
-- **Claude Code:** run `/mcp`, pick `seaglass`, choose **Authenticate**, and
-  approve in the browser; the tools load on the next turn. If `/mcp` does not
-  list `seaglass`, reinstall or re-enable the Seaglass plugin.
+- **Claude Code:** run `/mcp`, pick
+  `plugin:seaglass:seaglass-stg`, choose
+  **Authenticate**, and approve in the browser; the tools load on the next
+  turn. If `/mcp` does not list it, reinstall or re-enable the Seaglass plugin.
   If that does not bring it back, add the connector with
-  `claude mcp add --transport http seaglass https://api-stg.seaglassai.com/mcp`
+  `claude mcp add --transport http seaglass-stg https://api-stg.seaglassai.com/mcp`
   and then Authenticate.
 - **Claude Desktop, claude.ai, Cowork:** have the user open Customize, then
   Connectors. If Seaglass is listed, they connect or reconnect it there and
@@ -138,7 +139,10 @@ Give the one line for the client you are running in:
   not open the dialog, they add a custom connector on the Connectors page with
   `https://api-stg.seaglassai.com/mcp`. Give the link in these three apps only;
   in any other client it is the wrong fix.
-- **Codex:** run `codex mcp login seaglass` (or click Authenticate).
+- **Codex:** run `codex mcp login seaglass-stg` (or click
+  Authenticate).
+- **Gemini CLI:** run `/mcp auth seaglass-stg` and approve
+  in the browser.
 
 Handling notes:
 

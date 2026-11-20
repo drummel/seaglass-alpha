@@ -257,8 +257,8 @@ seaglass page history "Ada Example" --json
 seaglass send-product-feedback --kind bug --body "The search result had no outline block." --json
 ```
 
-The transcript-recall and source-connector operations have no CLI command by
-design; they are MCP-only.
+The source-connector operations have no CLI command by design; they are
+MCP-only.
 
 ## Reading the JSON
 

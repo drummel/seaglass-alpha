@@ -67,7 +67,7 @@ approved in the browser; the reconnect recipe says which, per client, and
 fixes both.
 
 The `seaglass` CLI is a separate, optional power-up. It is not needed for
-memory reads or writes; it adds transcript capture.
+memory reads or writes.
 Never report Seaglass as broken merely because the CLI is absent. If the CLI is
 installed but not signed in and the user wants it, offer once to run
 `seaglass auth login` for them (it opens a browser and waits for their
