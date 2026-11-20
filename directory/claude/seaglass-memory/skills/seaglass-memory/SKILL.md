@@ -112,9 +112,11 @@ not-connected error, its grant expired. Either way the fix is the client's own
 connector sign-in, not a Seaglass command.
 Give the one line for the client you are running in:
 
-- **Claude Code:** run `/mcp`, pick `seaglass`, choose **Authenticate**, and
-  approve in the browser; the tools load on the next turn. If `/mcp` does not
-  list `seaglass`, reinstall or re-enable the Seaglass plugin.
+- **Claude Code:** run `/mcp`, pick
+  `plugin:seaglass-memory-stg:seaglass-stg`,
+  choose **Authenticate**, and approve in the browser; the tools load on the
+  next turn. If `/mcp` does not list it, reinstall or re-enable the Seaglass
+  Memory plugin.
 - **Claude Desktop, claude.ai, Cowork:** have the user open Customize, then
   Connectors. If Seaglass is listed, they connect or reconnect it there and
   approve in the browser. If it is not listed, give them the link
