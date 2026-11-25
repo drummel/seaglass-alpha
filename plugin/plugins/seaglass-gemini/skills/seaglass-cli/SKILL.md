@@ -195,6 +195,12 @@ echo "<paste body>" | seaglass document store --library "<library>" --title "Q3 
 seaglass document store --library "<library>" --file ./long-transcript.md --via-upload --page "Q3 standup" --type projects --json
 ```
 
+`--file` reads the file itself, so where the CLI is signed in,
+`seaglass document store --library "<library>" --file <path>` stores a file
+without passing its contents through the chat. That makes it the cheap way to
+store a README or other project file, even in a chat that otherwise writes
+through the Seaglass tools.
+
 `--via-upload` POSTs the body through the upload endpoint instead of the
 JSON-RPC argument: same auth and provenance, cheaper for large bodies, and a
 re-upload of the same body returns `{deduplicated: true}` with no new

@@ -67,16 +67,21 @@ call's `receipt` says landed:
 
 ```
 Stored 4 memories and 1 document:
-  - Ada Example (page_01...): Project Example PM confirmation + Example Corp background
-  - Project Example (page_01...): April 15 kickoff outcomes
-  - Q3 launch (page_01...): budget pushback context
-  - User preference (memory_01...): async reviews over sync
-  - Project Example v3 spec (document_01...): pasted, supersedes Tuesday's draft
+  - Ada Example: Project Example PM confirmation + Example Corp background
+    Created a new page: Ada Example <link>
+  - Project Example: April 15 kickoff outcomes
+    Updated Project Example: <link>
+  - Q3 launch: budget pushback context
+  - User preference: async reviews over sync
+  - Project Example v3 spec: pasted, supersedes Tuesday's draft
 Skipped 2 items already in Seaglass.
 ```
 
-The counts come from the receipts, not from what you set out to store. Keep it
-tight: ids and one-line rationales, no ceremony.
+The counts come from the receipts, not from what you set out to store. Give a
+page's link where core rule 15 says to, from its `page_links` next step or a
+`created_pages` entry's `url`, and otherwise name the page without one; never
+show an id in place of a link. Keep it tight: names, links and one-line
+rationales, no ceremony.
 
 ## What you MUST NOT do
 
