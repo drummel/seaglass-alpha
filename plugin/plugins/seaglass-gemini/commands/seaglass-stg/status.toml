@@ -2,8 +2,9 @@ description = "Report whether this client is actually connected to Seaglass, and
 prompt = '''
 # Seaglass connection status
 
-Answer one question in as few words as possible: **is this client connected to
-Seaglass right now, and if not, what is the single next step?**
+Answer two things briefly: **is this client connected to Seaglass and set up,
+and what does Seaglass offer next?** When it is not connected, the answer is the
+single next step.
 
 A missing connection is silent: the tools are simply absent, which looks
 identical to Seaglass having nothing to say. This skill exists so the user can
@@ -20,10 +21,17 @@ tools.
 a connector is the user's action, and it needs a browser approval they have to
 see.
 
-**If the tools are present**, read the setup state from this session's
-`start_session` result, calling it now if the session has not made it yet. It
-reports whether setup is complete and, if not, the next setup step. Render what it says; do not
-editorialize it into something more confident than it says.
+**If the tools are present**, read the setup state from `start_session`. Inside
+a git repository, unless this session already passed it a project, run
+`git config --get remote.origin.url` and call `start_session` with
+`project_remote` set to its output (with `project_directory` set to the working
+directory's name when it prints nothing), so the project check runs. Elsewhere,
+use this session's `start_session` result, calling it now if the session has not
+made it yet. It reports whether setup is complete, the next setup step if not,
+and any offer. A step is named once: when an earlier `start_session` result in
+this session named a setup step, it still counts, even if a later call leaves it
+out. Render what it says; do not editorialize it into something more confident
+than it says.
 
 **Then call `report_install_state` with `plugin_installed: true`.** This skill
 ships inside the Seaglass plugin, so the fact that you are running it is the
@@ -46,17 +54,34 @@ Not connected. The Seaglass tools aren't in this session.
 ```
 
 **Connected**: lead with the confirmation, then the setup state exactly as
-`start_session`'s `setup_complete` gives it.
+`start_session`'s `setup_complete` gives it, then every offer it returned.
 
-- `setup_complete` is true: say setup is complete. One line is enough.
+- `setup_complete` is true: say setup is complete in one line.
 - `setup_complete` is false: setup is not complete, so never say it is. Name
-  each step `start_session` returned,
+  each setup step `start_session` returned,
   even an optional one such as installing the CLI,
   and offer it rather than doing it: this skill runs no installer (see what
   you must not do below). Do not list every possible remedy.
+- After the setup line, pass on every other step `start_session` returned as
+  an offer, never as unfinished setup. `offer_library_onboarding` is always an
+  offer, and so is any step that arrives while `setup_complete` is true.
+- When a step names the libraries the user chose at sign-up
+  (`offer_library_onboarding`), open the offer with this line, as written:
+  "Seaglass is your memory across AI tools, written up as pages you can read."
+  Then list those libraries as the step names them, and ask whether there is a
+  project or topic to bring into one.
 
 ```
-Connected to Seaglass. Setup is not complete: <the step or steps start_session named>.
+Connected to Seaglass. Setup is complete.
+
+Seaglass is your memory across AI tools, written up as pages you can read.
+The libraries you chose at sign-up are ready and still nearly empty:
+- <library>: <its collections>
+Is there a project or topic you'd like to bring into one of them?
+```
+
+```
+Connected to Seaglass. Setup is not complete: <the setup step or steps start_session named>.
 ```
 
 ## What the plugin does and does not provide
