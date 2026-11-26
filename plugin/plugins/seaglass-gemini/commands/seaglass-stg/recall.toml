@@ -21,15 +21,17 @@ If `{{args}}` is empty, work from what the conversation shows:
 ## How to render
 
 Don't dump whole wiki pages. Summarize each source in two to four bullets, and
-cite each page by its name and the `url` its hit carries, so the user can open
-it.
+cite each page on its own line as core rule 15 does: 🔍, the `path` its hit
+carries, then its title linked to its `url`, so the user can open it.
 
 ```
-**Project Example** (<url>): Q3 product launch led by Ada Example (PM) and Bo
+🔍 Example Corp → [Project Example](https://…)
+Q3 product launch led by Ada Example (PM) and Bo
 Example (eng). Status: design review last week, two-week buffer requested.
 Cross-links: Ada Example, Q3 launch, Example Corp migration.
 
-**Ada Example** (<url>): Project Example PM (formerly CTO at Example Corp).
+🔍 Example Corp → [Ada Example](https://…)
+Project Example PM (formerly CTO at Example Corp).
 Recent: pushed back on Q3 budget allocation, missed the April 8 sync.
 Async-review preference.
 ```

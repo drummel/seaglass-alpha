@@ -68,9 +68,9 @@ call's `receipt` says landed:
 ```
 Stored 4 memories and 1 document:
   - Ada Example: Project Example PM confirmation + Example Corp background
-    Created a new page: Ada Example <link>
+    📝 Example Corp → [Ada Example](https://…)
   - Project Example: April 15 kickoff outcomes
-    Updated Project Example: <link>
+    ✏️ Example Corp → [Project Example](https://…)
   - Q3 launch: budget pushback context
   - User preference: async reviews over sync
   - Project Example v3 spec: pasted, supersedes Tuesday's draft
